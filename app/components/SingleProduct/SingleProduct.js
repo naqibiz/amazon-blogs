@@ -11,17 +11,18 @@ import LatestProducts from "../LatestProducts/LatestProducts";
 
 const SingleProductDetail = ({ data }) => {
   const productImages = [
-    { id: 1, image: "/assets/images/sliderImg1.svg" },
-    { id: 2, image: "/assets/images/sliderImg2.svg" },
-    { id: 3, image: "/assets/images/sliderImg3.svg" },
-    { id: 4, image: "/assets/images/sliderImg4.svg" },
-    { id: 5, image: "/assets/images/sliderImg5.svg" },
-    { id: 6, image: "/assets/images/sliderImg1.svg" },
-    { id: 7, image: "/assets/images/sliderImg2.svg" },
-    { id: 8, image: "/assets/images/sliderImg3.svg" },
+    { id: 1, image: "/assets/images/sliderImg1.jpg" },
+    { id: 2, image: "/assets/images/sliderImg2.jpg" },
+    { id: 3, image: "/assets/images/sliderImg3.jpg" },
+    { id: 4, image: "/assets/images/sliderImg4.jpg" },
+    { id: 5, image: "/assets/images/sliderImg5.jpg" },
+    { id: 5, image: "/assets/images/sliderImg6.jpg" },
+    { id: 6, image: "/assets/images/sliderImg1.jpg" },
+    { id: 7, image: "/assets/images/sliderImg2.jpg" },
+    { id: 8, image: "/assets/images/sliderImg3.jpg" },
   ];
 
-  const [currentImage, setCurrentImage] = useState(productImages[2]?.image);
+  const [currentImage, setCurrentImage] = useState(productImages[0]?.image);
   const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
   const [showMagnifier, setShowMagnifier] = useState(false);
 
@@ -106,7 +107,7 @@ const SingleProductDetail = ({ data }) => {
                   style={{
                     backgroundImage: `url(${currentImage})`,
                     backgroundPosition: `${magnifierPosition.x}% ${magnifierPosition.y}%`,
-                    backgroundSize: `200%`,
+                    backgroundSize: "200%", // Adjust as needed for zoom level
                   }}
                 ></div>
               )}

@@ -1,10 +1,10 @@
-import AdminAuthPanel from "@/app/components/AdminAuthPanel/AdminAuthPanel";
+import AdminAuth from "@/app/components/AdminAuth/AdminAuth";
 import React from "react";
 
 const page = () => {
   return (
     <div>
-      <AdminAuthPanel />
+      <AdminAuth />
     </div>
   );
 };
