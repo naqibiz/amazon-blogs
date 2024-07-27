@@ -584,6 +584,7 @@ body input.form-control:focus {
   width: 100%;
   object-fit: contain;
   cursor: zoom-in;
+  padding: 5px;
 }
 .cms_panle_login_wrapper {
   margin-top: 70px;
@@ -627,7 +628,63 @@ body input.form-control:focus {
   height: 50px;
 }
 
-/* media queries */
+/* embla hero slider */
+.embla_hero_slider.embla {
+  max-width: 100%;
+  margin: auto;
+  --slide-height: 19rem;
+  --slide-spacing: 1rem;
+  --slide-size: 100%;
+  position: relative;
+}
+.embla_hero_slider .embla__viewport {
+  overflow: hidden;
+}
+.embla_hero_slider .embla__container {
+  backface-visibility: hidden;
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+  margin-left: calc(var(--slide-spacing) * -1);
+}
+.embla_hero_slider .embla__slide {
+  flex: 0 0 var(--slide-size);
+  min-width: 0;
+  padding-left: var(--slide-spacing);
+}
+.embla_hero_slider .embla__controls {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+.embla_hero_slider .embla__buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+.embla_hero_slider .embla__button {
+  box-shadow: none;
+  z-index: 1;
+  border-radius: 50%;
+  color: #fff;
+  width: 45px;
+  height: 45px;
+  background-color: #f3971b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+}
+.embla_hero_slider .embla__button:disabled {
+  color: var(--detail-high-contrast);
+}
+
+/* responsive start */
 @media screen and (max-width: 767px) and (min-width: 200px) {
 }
 

@@ -1,27 +1,25 @@
 "use client";
+import useEmblaCarousel from "embla-carousel-react";
 import React, { useState } from "react";
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
+import {
+  NextButton,
+  PrevButton,
+  usePrevNextButtons,
+} from "../EmblaCarouselArrows/EmblaCarouselArrowButtons";
+import Autoplay from "embla-carousel-autoplay";
 
 const TopProductBanners = () => {
-  const responsive = {
-    superLargeDesktop: {
-      breakpoint: { max: 4000, min: 3000 },
-      items: 1,
-    },
-    desktop: {
-      breakpoint: { max: 3000, min: 1024 },
-      items: 1,
-    },
-    tablet: {
-      breakpoint: { max: 1024, min: 464 },
-      items: 1,
-    },
-    mobile: {
-      breakpoint: { max: 464, min: 0 },
-      items: 1,
-    },
-  };
+  const options = { loop: true };
+  const [emblaRef, emblaApi] = useEmblaCarousel(options, [
+    Autoplay({ playOnInit: true, delay: 5000 }),
+  ]);
+
+  const {
+    prevBtnDisabled,
+    nextBtnDisabled,
+    onPrevButtonClick,
+    onNextButtonClick,
+  } = usePrevNextButtons(emblaApi);
 
   const topProducts = [
     { id: 1, productImage: "/assets/images/bannerImage1.jpg" },
@@ -30,33 +28,35 @@ const TopProductBanners = () => {
   ];
 
   return (
-    <div>
-      <Carousel
-        swipeable={false}
-        draggable={false}
-        showDots={false}
-        responsive={responsive}
-        ssr={true}
-        infinite={true}
-        autoPlay={true}
-        autoPlaySpeed={3000}
-        keyBoardControl={true}
-        customTransition="all 0.5s"
-        transitionDuration={500}
-        containerClass="carousel-container"
-        removeArrowOnDeviceType={["tablet", "mobile"]}
-        dotListClass="custom-dot-list-style"
-        itemClass="carousel-item-padding-40-px"
-      >
-        {topProducts?.map((val) => (
-          <div
-            key={val?.id}
-            className="slider_bg_image"
-            style={{ backgroundImage: `url(${val?.productImage})` }}
-          ></div>
-        ))}
-      </Carousel>
-    </div>
+    <>
+      <section className="embla_hero_slider embla">
+        <div className="embla__viewport" ref={emblaRef}>
+          <div className="embla__container">
+            {topProducts?.map((val, index) => (
+              <div className="embla__slide" key={index}>
+                <div
+                  className="slider_bg_image embla__slide__img"
+                  style={{ backgroundImage: `url(${val?.productImage})` }}
+                ></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="embla__controls">
+          <div className="embla__buttons">
+            <PrevButton
+              onClick={onPrevButtonClick}
+              disabled={prevBtnDisabled}
+            />
+            <NextButton
+              onClick={onNextButtonClick}
+              disabled={nextBtnDisabled}
+            />
+          </div>
+        </div>
+      </section>
+    </>
   );
 };
 

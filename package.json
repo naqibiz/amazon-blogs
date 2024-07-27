@@ -11,6 +11,8 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.3",
     "bootstrap": "^5.3.3",
+    "embla-carousel-autoplay": "^8.1.7",
+    "embla-carousel-react": "*",
     "i18next": "^23.11.5",
     "next": "14.1.4",
     "react": "^18",
