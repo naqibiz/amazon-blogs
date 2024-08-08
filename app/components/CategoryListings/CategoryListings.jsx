@@ -1,31 +1,27 @@
 "use client";
 import React, { useRef } from "react";
 import { Container } from "react-bootstrap";
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
-import { SlArrowRight, SlArrowLeft } from "react-icons/sl";
 import Link from "next/link";
+import useEmblaCarousel from "embla-carousel-react";
+import {
+  NextButton,
+  PrevButton,
+  usePrevNextButtons,
+} from "../EmblaCarouselArrows/EmblaCarouselArrowButtons";
+import Autoplay from "embla-carousel-autoplay";
 
 const CategoryListings = () => {
-  let carouselRef = useRef();
-  const responsive = {
-    superLargeDesktop: {
-      breakpoint: { max: 4000, min: 3000 },
-      items: 1,
-    },
-    desktop: {
-      breakpoint: { max: 3000, min: 1024 },
-      items: 4,
-    },
-    tablet: {
-      breakpoint: { max: 1024, min: 464 },
-      items: 1,
-    },
-    mobile: {
-      breakpoint: { max: 464, min: 0 },
-      items: 1,
-    },
-  };
+  const options = { loop: true };
+  const [emblaRef, emblaApi] = useEmblaCarousel(options, [
+    Autoplay({ playOnInit: true, delay: 5000 }),
+  ]);
+
+  const {
+    prevBtnDisabled,
+    nextBtnDisabled,
+    onPrevButtonClick,
+    onNextButtonClick,
+  } = usePrevNextButtons(emblaApi);
 
   const categoryList = [
     {
@@ -81,57 +77,34 @@ const CategoryListings = () => {
   return (
     <Container>
       <h1>One-Stop Shop for Everything You Need</h1>
-      <div className="category_product_listing_inner">
-        <div className="custom_slide_button">
-          <div
-            className="previous_slide slider_action_arrow"
-            onClick={() => {
-              carouselRef.previous();
-            }}
-          >
-            <SlArrowLeft />
-          </div>
-          <div
-            className="next_slide slider_action_arrow"
-            onClick={() => {
-              carouselRef.next();
-            }}
-          >
-            <SlArrowRight />
+      <div className="category_product_listing_inner embla">
+        <div className="embla__viewport" ref={emblaRef}>
+          <div className="embla__container">
+            {categoryList?.map((val, index) => (
+              <div className="embla__slide" key={index}>
+                <div
+                  className="product_detail embla__slide__img"
+                  style={{
+                    backgroundImage: `url(${val?.productImage})`,
+                  }}
+                ></div>
+              </div>
+            ))}
           </div>
         </div>
-        <Carousel
-          ref={(el) => {
-            carouselRef = el;
-          }}
-          arrows={false}
-          swipeable={false}
-          draggable={false}
-          showDots={false}
-          responsive={responsive}
-          ssr={true}
-          infinite={true}
-          autoPlay={false}
-          autoPlaySpeed={3000}
-          keyBoardControl={true}
-          customTransition="all 0.5s"
-          transitionDuration={500}
-          containerClass="carousel-container"
-          removeArrowOnDeviceType={["tablet", "mobile"]}
-          dotListClass="custom-dot-list-style"
-          itemClass="carousel-item-padding-40-px"
-          partialVisible={false}
-        >
-          {categoryList?.map((val) => (
-            <div
-              key={val?.id}
-              className="product_detail"
-              style={{
-                backgroundImage: `url(${val?.productImage})`,
-              }}
-            ></div>
-          ))}
-        </Carousel>
+
+        <div className="embla__controls">
+          <div className="embla__buttons">
+            <PrevButton
+              onClick={onPrevButtonClick}
+              disabled={prevBtnDisabled}
+            />
+            <NextButton
+              onClick={onNextButtonClick}
+              disabled={nextBtnDisabled}
+            />
+          </div>
+        </div>
       </div>
     </Container>
   );

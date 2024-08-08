@@ -8,6 +8,7 @@ import { MdFileCopy } from "react-icons/md";
 import { toast } from "react-toastify";
 import CategoryListings from "../CategoryListings/CategoryListings";
 import LatestProducts from "../LatestProducts/LatestProducts";
+import QRCode from "qrcode.react";
 
 const SingleProductDetail = ({ data }) => {
   const productImages = [
@@ -25,6 +26,7 @@ const SingleProductDetail = ({ data }) => {
   const [currentImage, setCurrentImage] = useState(productImages[0]?.image);
   const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
   const [showMagnifier, setShowMagnifier] = useState(false);
+  const [qrdata, setQRData] = useState("No result");
 
   useEffect(() => {
     console.log(data, "data");
@@ -41,7 +43,7 @@ const SingleProductDetail = ({ data }) => {
     "PhotoandVideo",
   ];
 
-  let linkVal = "https://www.amazon.com/";
+  let linkVal = "https://itemzfinder.com/";
 
   const copyToClipboard = () => {
     const link = linkVal;
@@ -84,7 +86,9 @@ const SingleProductDetail = ({ data }) => {
               <div className="gallery_thubmnanails">
                 {productImages?.map((val, index) => (
                   <div
-                    className="thumbnail"
+                    className={`thumbnail ${
+                      currentImage == val.image ? "selected" : ""
+                    }`}
                     key={index}
                     onClick={() => handleThumbnailClick(val.image)}
                   >
@@ -260,6 +264,24 @@ const SingleProductDetail = ({ data }) => {
                   >
                     Copy For Purchase <MdFileCopy />
                   </button>
+                </div>
+                <div className="qr_code_scan_link">
+                  <QRCode
+                    value={linkVal}
+                    size={140}
+                    bgColor="#ffffff"
+                    fgColor="#000000"
+                    level="Q"
+                    includeMargin={true}
+                    imageSettings={{
+                      src: "/assets/images/qr-code.svg",
+                      x: null,
+                      y: null,
+                      height: 140,
+                      width: 140,
+                      excavate: true,
+                    }}
+                  />
                 </div>
               </div>
             </div>

@@ -1,26 +1,24 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Col, Container, Form, Row } from "react-bootstrap";
+import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import InputFormControl from "../InputFormControl/InputFormControl";
 import Button from "../Button/Button";
-import { FaEye, FaEyeSlash } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/app/database/firebaseConfig";
 import { toast } from "react-toastify";
 import { toastStyle } from "@/app/_method/utils";
-import Link from "next/link";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "@/app/database/firebaseConfig";
 
-const AdminAuth = () => {
+const AddUser = () => {
   const router = useRouter();
   const [form, setForm] = useState({
+    fullname: "",
+    username: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmpasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleFormChange = (e) => {
@@ -33,26 +31,33 @@ const AdminAuth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (form.password !== form.confirmPassword) {
-      toast.error("Password is not match", toastStyle);
-      return;
-    }
-
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, form.email, form.password);
-      toast.success("Panel successfully logged In", toastStyle);
-      router.push("/panel/dashboard");
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+      const user = userCredential.user;
+
+      await updateProfile(user, {
+        displayName: form.fullname,
+        photoURL: "",
+      });
+
+      toast.success("User added successfully", toastStyle);
+      setForm({
+        fullname: "",
+        username: "",
+        email: "",
+        password: "",
+      });
     } catch (error) {
-      if (error.code === "auth/invalid-credential") {
-        toast.error(
-          "Invalid credentials. Please check your email and password.",
-          toastStyle
-        );
+      if (error.code === "auth/email-already-in-use") {
+        toast.error("User already exists", toastStyle);
       } else {
-        console.log(error, "Sign-in error");
+        console.error("Error signing up:", error);
         toast.error(error.message, toastStyle);
       }
     } finally {
@@ -64,13 +69,32 @@ const AdminAuth = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  const toggleConfirmPasswordVisibility = () => {
-    setConfirmPasswordVisible(!confirmpasswordVisible);
-  };
-
   return (
     <div className="cms_panle_auth_wrapper">
       <Form onSubmit={handleSubmit}>
+        <div className="row">
+          <div className="col-md-6">
+            <InputFormControl
+              required={true}
+              label="Full Name*"
+              type="text"
+              name="fullname"
+              onChange={handleFormChange}
+              value={form.fullname}
+            />
+          </div>
+          <div className="col-md-6">
+            <InputFormControl
+              required={true}
+              label="Username*"
+              type="text"
+              name="username"
+              onChange={handleFormChange}
+              value={form.username}
+            />
+          </div>
+        </div>
+
         <InputFormControl
           required={true}
           label="E-Mail*"
@@ -79,6 +103,7 @@ const AdminAuth = () => {
           onChange={handleFormChange}
           value={form.email}
         />
+
         <InputFormControl
           required={true}
           label="Password*"
@@ -89,20 +114,11 @@ const AdminAuth = () => {
           icon={passwordVisible ? <FaEye /> : <FaEyeSlash />}
           onClickIcon={togglePasswordVisibility}
         />
-        <InputFormControl
-          required={true}
-          label="Confirm Password*"
-          type={confirmpasswordVisible ? "text" : "password"}
-          name="confirmPassword"
-          onChange={handleFormChange}
-          value={form.confirmPassword}
-          icon={confirmpasswordVisible ? <FaEye /> : <FaEyeSlash />}
-          onClickIcon={toggleConfirmPasswordVisibility}
-        />
-        <Button btnTitle={`Login User`} type="submit" isLoading={loading} />
+
+        <Button btnTitle={`Signup User`} type="submit" isLoading={loading} />
       </Form>
     </div>
   );
 };
 
-export default AdminAuth;
+export default AddUser;

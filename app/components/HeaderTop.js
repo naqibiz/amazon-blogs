@@ -1,70 +1,75 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
 import { LuSearch } from "react-icons/lu";
 import { FaPhoneVolume } from "react-icons/fa6";
-import { GrLanguage } from "react-icons/gr";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { RiLogoutCircleLine } from "react-icons/ri";
+import { signOut } from "firebase/auth";
+import { auth } from "../database/firebaseConfig";
+import { toast } from "react-toastify";
+import { toastStyle } from "../_method/utils";
+import useAuthRedirect from "./useAuthRedirect/useAuthRedirect";
 
 const HeaderTop = () => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuthRedirect();
+  const panelRoute = pathname?.slice(0, 6) == "/panel";
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(!loading && user);
+  }, [loading, user]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Logged out successfully", toastStyle);
+      router.push("/admin-panel-auth");
+    } catch (error) {
+      console.error("Logout error", error);
+      toast.error("Failed to log out", toastStyle);
+    }
+  };
+
   return (
     <div className="header_top_content">
       <div className="header_logo">
-        <img src="/assets/images/logo-amazon.png" alt="" />
+        <Link href={"/"}>
+          <img src="/assets/images/logo-amazon.png" alt="" />
+        </Link>
       </div>
-      <div className="search-blog">
-        <Form>
-          <input
-            className="form-control"
-            placeholder="Find what you're looking for..."
-            required
-            type="text"
-            aria-label="Search Blogs"
-          />
-          <button className="search_blog_btn">
-            <LuSearch color="#fff" size={25} />
-          </button>
-        </Form>
-      </div>
-      <div className="header_right_section">
-        {/* <div className="change_language">
-          <div className="language_icon">
-            <GrLanguage color="#fff" size={20} />
-          </div>
-          <div className="languages">
-            <div className="lang">
-              <div
-                className="icon"
-                style={{ backgroundImage: `url(/assets/images/us-flag.svg)` }}
-              ></div>
-              <p>English</p>
-            </div>
-            <div className="lang">
-              <div
-                className="icon"
-                style={{
-                  backgroundImage: `url(/assets/images/france-flag.svg)`,
-                }}
-              ></div>
-
-              <p>Français</p>
-            </div>
-            <div className="lang">
-              <div
-                className="icon"
-                style={{
-                  backgroundImage: `url(/assets/images/germany-flag.svg)`,
-                }}
-              ></div>
-
-              <p>Deutsch</p>
-            </div>
-          </div>
-        </div> */}
-        <div className="contact_section">
-          <a href="tel:03312299471">
-            <FaPhoneVolume size={25} color="#ffffff" />
-            03312299471
-          </a>
+      {pathname == "/admin-panel-auth" || panelRoute ? null : (
+        <div className="search-blog">
+          <Form>
+            <input
+              className="form-control"
+              placeholder="Find what you're looking for..."
+              required
+              type="text"
+              aria-label="Search Blogs"
+            />
+            <button className="search_blog_btn">
+              <LuSearch color="#fff" size={25} />
+            </button>
+          </Form>
         </div>
+      )}
+      <div className="header_right_section">
+        {isAuthenticated ? (
+          <button className="logout_panel" onClick={() => handleLogout()}>
+            <RiLogoutCircleLine size={20} />
+          </button>
+        ) : (
+          <div className="contact_section">
+            <a href="tel:+92 331 2299471">
+              <FaPhoneVolume size={25} color="#ffffff" />
+              +92 331 2299471
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

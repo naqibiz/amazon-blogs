@@ -19,28 +19,37 @@ const InputFormControl = forwardRef(function InputFormControl(
     readOnly,
     className,
     label,
+    icon,
+    onClickIcon,
   },
   ref
 ) {
   return (
     <Form.Group className={`input-form-group`}>
       <Form.Label className={`input-label`}>{label}</Form.Label>
-      <Form.Control
-        readOnly={readOnly}
-        placeholder={placeholder}
-        required={required}
-        type={type}
-        as={as}
-        name={name}
-        rows={rows}
-        inputMode={inputMode}
-        ref={ref}
-        disabled={disabled}
-        value={value}
-        maxlength={maxlength}
-        onChange={onChange}
-        className={`${className} input-form-control`}
-      />
+      <div className="input-form-group-inner">
+        <Form.Control
+          readOnly={readOnly}
+          placeholder={placeholder}
+          required={required}
+          type={type}
+          as={as}
+          name={name}
+          rows={rows}
+          inputMode={inputMode}
+          ref={ref}
+          disabled={disabled}
+          value={value}
+          maxlength={maxlength}
+          onChange={onChange}
+          className={`${className} input-form-control`}
+        />
+        {icon && (
+          <div className="input_icon" onClick={onClickIcon}>
+            {icon}
+          </div>
+        )}
+      </div>
     </Form.Group>
   );
 });

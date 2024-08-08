@@ -3,7 +3,7 @@ import SingleProductDetail from "../components/SingleProduct/SingleProduct";
 
 const singleProductIndex = ({ searchParams }) => {
   return (
-    <div>
+    <div className="middle_content">
       <SingleProductDetail data={searchParams} />
     </div>
   );

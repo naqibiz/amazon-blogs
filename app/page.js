@@ -4,7 +4,7 @@ import TopProductBanners from "./components/TopProductBanners/TopProductBanners"
 
 export default function Home() {
   return (
-    <div className="home_middle_content">
+    <div className="middle_content">
       <TopProductBanners />
       <div className="category_product_listing">
         <CategoryListings />

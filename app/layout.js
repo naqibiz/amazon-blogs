@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./components/Header";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "./components/Footer";
 
 const rubik = Rubik({ subsets: ["latin"] });
 
@@ -15,10 +16,18 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className={rubik.className}>
-        <div className="content_body">
+        <div className="itemzfinder_content_body">
           <Header />
-          {children} <ToastContainer />
+          <div className="content_middle_body">{children}</div>
+          <ToastContainer />
+          <Footer />
         </div>
       </body>
     </html>

@@ -1,6 +1,7 @@
 /** @format */
 
 import React from "react";
+import Loader from "./Loader";
 
 const Button = ({
   btnTitle,
@@ -21,7 +22,7 @@ const Button = ({
           isLoading ? "cursor-not-allowed" : ""
         }`}
       >
-        {isLoading ? "Loading..." : btnTitle}
+        {isLoading ? <Loader /> : btnTitle}
       </button>
     </div>
   );
