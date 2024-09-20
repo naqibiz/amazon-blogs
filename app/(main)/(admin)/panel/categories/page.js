@@ -1,10 +1,10 @@
-import Categories from "@/app/components/PanelComponents/Categories";
+import CategoryList from "@/app/components/PanelComponents/Categories/CategoryList";
 import React from "react";
 
 const categoryIndex = () => {
   return (
     <div>
-      <Categories />
+      <CategoryList />
     </div>
   );
 };

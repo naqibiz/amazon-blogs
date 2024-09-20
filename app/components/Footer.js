@@ -23,7 +23,7 @@ const Footer = () => {
         { id: 1, title: "Home", link: "/" },
         { id: 2, title: "About Us", link: "/" },
         { id: 3, title: "Products", link: "/" },
-        { id: 4, title: "Contact Us", link: "/" },
+        { id: 4, title: "Contact Us", link: "/contact-us" },
       ],
     },
     {

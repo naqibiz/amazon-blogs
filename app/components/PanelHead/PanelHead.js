@@ -1,6 +1,7 @@
+import Link from "next/link";
 import React from "react";
 
-const PanelHead = ({ tittle, btnTitle, onClick }) => {
+const PanelHead = ({ tittle, btnTitle, onClick, btnLinkTitle, btnLink }) => {
   return (
     <>
       {tittle && (
@@ -9,11 +10,15 @@ const PanelHead = ({ tittle, btnTitle, onClick }) => {
             <p className="title">{tittle}</p>
           </div>
 
-          {btnTitle && (
+          {btnTitle ? (
             <button className="action_button" onClick={onClick}>
               {btnTitle}
             </button>
-          )}
+          ) : btnLinkTitle ? (
+            <Link href={btnLink ? btnLink : "#"}>
+              <button className="action_button">{btnLinkTitle}</button>
+            </Link>
+          ) : null}
         </div>
       )}
     </>

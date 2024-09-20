@@ -26,7 +26,11 @@ const Authentication = () => {
               />
             </div>
 
-            {authType === "signup" ? <AddUser /> : <AdminAuth />}
+            {authType === "signup" ? (
+              <AddUser setAuthType={setAuthType} />
+            ) : (
+              <AdminAuth />
+            )}
           </Col>
         </Row>
       </Container>

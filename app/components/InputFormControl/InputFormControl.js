@@ -26,7 +26,7 @@ const InputFormControl = forwardRef(function InputFormControl(
 ) {
   return (
     <Form.Group className={`input-form-group`}>
-      <Form.Label className={`input-label`}>{label}</Form.Label>
+      {label && <Form.Label className={`input-label`}>{label}</Form.Label>}
       <div className="input-form-group-inner">
         <Form.Control
           readOnly={readOnly}

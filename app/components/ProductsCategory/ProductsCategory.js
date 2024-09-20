@@ -1,14 +1,17 @@
 "use client";
-import React, { useRef } from "react";
-import { Col, Container, Row } from "react-bootstrap";
-import StarRatings from "react-star-ratings";
-import { BsFillInfoCircleFill } from "react-icons/bs";
-import Link from "next/link";
-import { BsCurrencyDollar } from "react-icons/bs";
-import { useRouter } from "next/navigation";
 
-const LatestProducts = () => {
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { Col, Container, Row } from "react-bootstrap";
+import { BsCurrencyDollar, BsFillInfoCircleFill } from "react-icons/bs";
+
+const ProductsCategory = ({ data }) => {
   const router = useRouter();
+  useEffect(() => {
+    console.log(data, "data");
+  }, [data]);
+
   const categoryList = [
     {
       id: 1,
@@ -93,41 +96,42 @@ const LatestProducts = () => {
   ];
 
   return (
-    <Container>
-      <h1>Our Newest Obsessions Have Arrived</h1>
-      <div className="latest_products_inner">
-        <Row>
-          {categoryList?.map((val, i) => (
-            <Col lg={3} md={4} key={i}>
-              <div className="latest_product_grid">
-                <Link href={`/single-product?id=${val?.id}`}>
-                  <div className="product_image">
-                    <img src={val?.productImage} alt="" />
-                  </div>
-                  <div className="product-content">
-                    <p className="sponsored">
-                      Sponsored <BsFillInfoCircleFill />
-                    </p>
-                    <p className="product-title">{val?.description}</p>
-                    <p className="product-description">{val?.description}</p>
-                    <div className="product_price_main">
-                      <p className="product-price">
-                        <sup>
-                          <BsCurrencyDollar />
-                        </sup>
-                        {val?.price}
-                      </p>
-                      <del>$ 19.99</del>
+    <div className="latest_product_listing category_product_listing">
+      <Container>
+        <div className="latest_products_inner">
+          <Row>
+            {categoryList?.map((val, i) => (
+              <Col lg={3} md={4} key={i}>
+                <div className="latest_product_grid">
+                  <Link href={`/single-product?id=${val?.id}`}>
+                    <div className="product_image">
+                      <img src={val?.productImage} alt="" />
                     </div>
-                  </div>
-                </Link>
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </div>
-    </Container>
+                    <div className="product-content">
+                      <p className="sponsored">
+                        Sponsored <BsFillInfoCircleFill />
+                      </p>
+                      <p className="product-title">{val?.description}</p>
+                      <p className="product-description">{val?.description}</p>
+                      <div className="product_price_main">
+                        <p className="product-price">
+                          <sup>
+                            <BsCurrencyDollar />
+                          </sup>
+                          {val?.price}
+                        </p>
+                        <del>$ 19.99</del>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </Container>
+    </div>
   );
 };
 
-export default LatestProducts;
+export default ProductsCategory;

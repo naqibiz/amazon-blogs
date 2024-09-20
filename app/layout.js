@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "./components/Footer";
+import ProgressBarRouting from "./components/ProgressBarRouting/ProgressBarRouting";
 
 const rubik = Rubik({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={rubik.className}>
         <div className="itemzfinder_content_body">
+          <ProgressBarRouting />
           <Header />
           <div className="content_middle_body">{children}</div>
           <ToastContainer />

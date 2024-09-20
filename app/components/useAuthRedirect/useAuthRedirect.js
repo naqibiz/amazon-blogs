@@ -1,21 +1,32 @@
 "use client";
 import { auth } from "@/app/database/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useEffect, useState } from "react";
 
 const useAuthRedirect = () => {
-  const [user, loading, error] = useAuthState(auth);
   const router = useRouter();
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState(null);
+  const isPanelRoute = pathname?.includes("/panel");
 
   useEffect(() => {
-    if (!loading && !user && pathname?.startsWith("/panel")) {
-      router.push("/admin-panel-auth");
-    }
-  }, [user, loading, pathname, router]);
+    if (isPanelRoute) {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log(user, "current user");
+          setCurrentUser(user);
+        } else {
+          console.log("User not found, redirecting...");
+          router.push("/admin-panel-auth");
+        }
+      });
 
-  return { user, loading, error };
+      return () => unsubscribe();
+    }
+  }, [isPanelRoute, router]);
+
+  return { currentUser };
 };
 
 export default useAuthRedirect;

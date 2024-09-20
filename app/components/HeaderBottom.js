@@ -1,28 +1,41 @@
 import React from "react";
+import SkeletonLoader from "./SkeletonLoader/SkeletonLoader";
+import Link from "next/link";
 
-const HeaderBottom = () => {
+const HeaderBottom = ({ navigationItems, loading }) => {
+  console.log(navigationItems, "navigationItemsnavigationItems");
   return (
     <div className="navigation_items">
       <nav>
         <ul>
-          <li>
-            <a href="#">Electronics</a>
-          </li>
-          <li>
-            <a href="#">Computers</a>
-          </li>
-          <li>
-            <a href="#">Smart Home</a>
-          </li>
-          <li>
-            <a href="#">Arts & Crafts</a>
-          </li>
-          <li>
-            <a href="#">Women's Fashion</a>
-          </li>
-          <li>
-            <a href="#">Men's Fashion</a>
-          </li>
+          {loading ? (
+            [1, 2, 3, 4, 5].map((val) => (
+              <li key={val}>
+                <SkeletonLoader height={20} width={70} />
+              </li>
+            ))
+          ) : navigationItems.length > 0 ? (
+            navigationItems.map((nav, i) => (
+              <>
+                {console.log(nav, "navnav")}
+                <li key={i}>
+                  <Link
+                    href={{
+                      pathname: "/product-category",
+                      query: {
+                        category: nav?.category_type,
+                        name: nav?.category,
+                      },
+                    }}
+                  >
+                    {nav.nav_name}
+                  </Link>
+                </li>
+              </>
+            ))
+          ) : (
+            <></>
+          )}
         </ul>
       </nav>
     </div>

@@ -15,13 +15,8 @@ import useAuthRedirect from "./useAuthRedirect/useAuthRedirect";
 const HeaderTop = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading } = useAuthRedirect();
+  const { currentUser } = useAuthRedirect();
   const panelRoute = pathname?.slice(0, 6) == "/panel";
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    setIsAuthenticated(!loading && user);
-  }, [loading, user]);
 
   const handleLogout = async () => {
     try {
@@ -58,7 +53,7 @@ const HeaderTop = () => {
         </div>
       )}
       <div className="header_right_section">
-        {isAuthenticated ? (
+        {currentUser ? (
           <button className="logout_panel" onClick={() => handleLogout()}>
             <RiLogoutCircleLine size={20} />
           </button>
