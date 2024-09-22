@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "react-bootstrap";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from "react-icons/hi";
-import PageLoader from "../PageLoader/PageLoader";
 
 const DataTable = ({ data, columns, rowsPerPage, onEdit, onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,7 +37,9 @@ const DataTable = ({ data, columns, rowsPerPage, onEdit, onDelete }) => {
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  style={{ width: column.key === "action" && 150 }}
+                  style={{
+                    width: column.width || "auto",
+                  }}
                 >
                   {column.key === "action" ? (
                     <div className="data_table_crud_action">

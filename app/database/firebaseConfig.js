@@ -4,7 +4,6 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
-  updateProfile,
 } from "firebase/auth";
 import {
   addDoc,
@@ -13,7 +12,10 @@ import {
   doc,
   getDocs,
   getFirestore,
+  query,
+  Timestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { toast } from "react-toastify";
@@ -182,18 +184,87 @@ export async function deleteCategoryCollections(id) {
 // ADD CONTACT COLLECTION
 export async function addContactUs(contactInfo) {
   try {
-    const { firstname, lastname, phone, email, message } = contactInfo;
+    const { fullname, firstname, lastname, phone, email, message, createdAt } =
+      contactInfo;
     await addDoc(collection(db, "contactus"), {
+      fullname,
       firstname,
       lastname,
       phone,
       email,
       message,
+      createdAt: Timestamp.now(),
     });
 
     toast.success("Contact message added successfully", toastStyle);
   } catch (error) {
     console.log("ERROR CONTACT:", error);
     toast.error(error.message, toastStyle);
+  }
+}
+
+// GET CONTACT COLLECTION
+export async function getContactUs() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "contactus"));
+    const contactData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt ? doc.data().createdAt.toDate() : null,
+    }));
+    return contactData;
+  } catch (error) {
+    console.error("Error fetching contact:", error);
+    toast.error("Failed to fetch contact", toastStyle);
+    return [];
+  }
+}
+
+// ADD SUBSCRIPTION COLLECTION
+export async function addSubscription(subscriptionInfo) {
+  try {
+    const { email, status } = subscriptionInfo;
+
+    const q = query(
+      collection(db, "subscription"),
+      where("email", "==", email)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      toast.info(`The email ${email} is already subscribed`, toastStyle);
+      return;
+    }
+
+    await addDoc(collection(db, "subscription"), {
+      email,
+      status: "Subscribed",
+      createdAt: Timestamp.now(),
+    });
+
+    toast.success(
+      `Thank you! ${email} is now subscribed to our newsletter.`,
+      toastStyle
+    );
+  } catch (error) {
+    console.log("ERROR SUBSCRIPTION:", error);
+    toast.error(`Failed to add subscription: ${error.message}`, toastStyle);
+  }
+}
+
+// GET SUBSCRIPTION COLLECTION
+export async function getSubscription() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "subscription"));
+    const contactData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt ? doc.data().createdAt.toDate() : null,
+    }));
+    return contactData;
+  } catch (error) {
+    console.error("Error fetching subscription:", error);
+    toast.error("Failed to fetch subscription", toastStyle);
+    return [];
   }
 }

@@ -71,7 +71,7 @@ const CategoryList = () => {
   const columns = [
     { key: "category_name", label: "Category Name" },
     { key: "category_slug", label: "Category Slug" },
-    { key: "action", label: "Action" },
+    { key: "action", label: "Action", width: "150px" },
   ];
   return (
     <>

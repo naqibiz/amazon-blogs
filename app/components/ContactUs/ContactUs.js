@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Col, Container, Form, Row } from "react-bootstrap";
 import InputFormControl from "../InputFormControl/InputFormControl";
 import PhoneInput from "react-phone-input-international";
@@ -9,9 +9,11 @@ import HeadContent from "../HeadContent/HeadContent";
 import { toast } from "react-toastify";
 import { toastStyle } from "@/app/_method/utils";
 import { addContactUs } from "@/app/database/firebaseConfig";
+import axios from "axios";
 
 const ContactUs = () => {
   const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     firstname: "",
     lastname: "",
@@ -39,6 +41,7 @@ const ContactUs = () => {
     setLoading(true);
     try {
       await addContactUs({
+        fullname: form.firstname + " " + form.lastname,
         firstname: form.firstname,
         lastname: form.lastname,
         phone: form.phone,
@@ -58,6 +61,38 @@ const ContactUs = () => {
       setLoading(false);
     }
   };
+
+  // const handleSubmitMail = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch("/api/contact", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(form),
+  //     });
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       alert("Email sent successfully!");
+  //     } else {
+  //       alert("Error sending email.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     alert("Error submitting form.");
+  //   } finally {
+  //     setLoading(false);
+  //     setForm({
+  //       firstname: "",
+  //       lastname: "",
+  //       phone: "",
+  //       email: "",
+  //       message: "",
+  //     });
+  //   }
+  // };
 
   return (
     <div className="contact_us_Page">
