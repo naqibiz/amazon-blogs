@@ -1,16 +1,42 @@
 "use client";
 
+import { getProducts } from "@/app/database/firebaseConfig";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { BsCurrencyDollar, BsFillInfoCircleFill } from "react-icons/bs";
 
 const ProductsCategory = ({ data }) => {
   const router = useRouter();
+  const [productItems, setProductItems] = useState([]);
+  const [isFetched, setIsFetched] = useState(false);
+  const [loader, setLoader] = useState(false);
+
   useEffect(() => {
-    console.log(data, "data");
-  }, [data]);
+    const fetchProductItems = async () => {
+      try {
+        setLoader(true);
+        const items = await getProducts();
+        setProductItems(items);
+      } catch (error) {
+        console.error("Error fetching product items:", error);
+      } finally {
+        setLoader(false);
+        setIsFetched(true);
+      }
+    };
+
+    if (!isFetched) {
+      fetchProductItems();
+    }
+  }, [isFetched, data]);
+
+  const filteredProducts = productItems?.filter(
+    (product) => product?.categoryType === data?.category
+  );
+
+  console.log(filteredProducts, "filteredProductsfilteredProducts");
 
   const categoryList = [
     {

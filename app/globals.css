@@ -1286,9 +1286,11 @@ footer.footer_section {
 .phone_input_international .country-list::-webkit-scrollbar {
   width: 10px;
 }
-.contact_us_Page .input-form-group textarea.form-control {
+.contact_us_Page .input-form-group textarea.form-control,
+.add_new_product textarea.form-control {
   height: unset;
 }
+
 .contact_us_Page {
   margin: 0 0 80px 0;
 }
@@ -1359,6 +1361,166 @@ footer.footer_section {
 }
 .contact_us_Page form .custom_buttom {
   width: 155px;
+}
+.add_more_fields {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background-color: #66707f;
+  color: #fff;
+  line-height: normal;
+  padding: 11px 20px;
+  width: fit-content;
+  border-radius: 10px;
+  user-select: none;
+  cursor: pointer;
+}
+.add_product_specification .specification.row {
+  min-height: fit-content;
+}
+.add_product_specification .specification {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.add_product_specification .specification .input-form-group {
+  width: 100%;
+}
+.add_product_specification .specification .delete_specification {
+  height: fit-content;
+  cursor: pointer;
+  user-select: none;
+}
+.add_new_product {
+  margin-bottom: 40px;
+}
+.add_new_product_content .add_about_items {
+  margin-top: 35px;
+}
+.add_new_product_content .more_item_title {
+  margin-bottom: 20px;
+  font-size: 20px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.add_about_items .about_item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.add_about_items .about_item .input-form-group {
+  width: 100%;
+}
+.add_about_items .about_item .delete_about_item {
+  height: fit-content;
+  cursor: pointer;
+  user-select: none;
+}
+.add_tags_section .tags_output .tag-item {
+  background-color: #d7d7d7;
+  width: fit-content;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.add_tags_section .tags_output {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  background-color: #f5f5f5;
+  padding: 12px;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+.add_tags_section .tags_input {
+  margin-bottom: 30px;
+}
+.add_tags_section .tags_input .input-form-group {
+  margin-bottom: 15px;
+}
+.add_tags_section .tags_output .tag-item .remove-tag {
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+.product_side_section {
+  height: 100%;
+  border: 1px solid #000;
+  border-radius: 5px;
+  margin-top: 30px;
+  padding: 20px 20px 0 20px;
+}
+.product_image_upload .info {
+  margin: 0;
+}
+.product_feature_images .product_image_upload {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px dashed;
+  margin: 0 0 20px 0;
+  padding: 30px 0;
+  border-radius: 5px;
+  user-select: none;
+  cursor: pointer;
+}
+.product_feature_images .feature_image_preview {
+  height: 105px;
+  width: 105px;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  border: 1px solid;
+  border-radius: 10px;
+  position: relative;
+}
+.product_feature_images .feature_image_wrapper {
+  margin: 20px 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.feature_image_wrapper .feature_image {
+  position: relative;
+}
+.feature_image_wrapper .feature_image .remove_feature_image {
+  width: fit-content;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.product_feature_images .feature_image_preview:after {
+  content: "";
+  background-color: #000000b5;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+}
+.product_side_section .product_feature_images .feature_image_wrapper {
+  margin-bottom: 35px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid;
+}
+.product_side_section .add_new_product_btn {
+  display: flex;
+  justify-content: flex-end;
+}
+.product_side_section .add_new_product_btn .custom_buttom {
+  width: 180px;
 }
 
 /* responsive start */

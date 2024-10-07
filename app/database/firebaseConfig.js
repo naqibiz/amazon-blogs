@@ -17,7 +17,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { toast } from "react-toastify";
 import { toastStyle } from "../_method/utils";
 
@@ -34,6 +34,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+export const firebasestorage = getStorage(app);
 
 // SIGNUP USER
 export async function register(userInfo) {
@@ -184,7 +185,7 @@ export async function deleteCategoryCollections(id) {
 // ADD CONTACT COLLECTION
 export async function addContactUs(contactInfo) {
   try {
-    const { fullname, firstname, lastname, phone, email, message, createdAt } =
+    const { fullname, firstname, lastname, phone, email, message } =
       contactInfo;
     await addDoc(collection(db, "contactus"), {
       fullname,
@@ -265,6 +266,87 @@ export async function getSubscription() {
   } catch (error) {
     console.error("Error fetching subscription:", error);
     toast.error("Failed to fetch subscription", toastStyle);
+    return [];
+  }
+}
+
+// ADD PRODUCT COLLECTION
+export async function addProduct(products) {
+  try {
+    const {
+      product_title,
+      product_description,
+      product_short_description,
+      product_price,
+      product_url,
+      category,
+      product_type,
+      product_number_sin,
+      feature_images = [],
+      specifications = [],
+      about_items = [],
+      tags = [],
+      categoryType,
+    } = products;
+
+    const productsRef = collection(db, "products");
+    const q = query(
+      productsRef,
+      where("product_number_sin", "==", product_number_sin)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      toast.info("A product with this SIN number already exists.", toastStyle);
+      return;
+    }
+
+    const featureImageUrls = [];
+
+    for (const image of feature_images) {
+      const storageRef = ref(storage, `/productImages/${image.name}`);
+      await uploadBytes(storageRef, image);
+      const url = await getDownloadURL(storageRef);
+      featureImageUrls.push(url);
+    }
+
+    // Save product data along with image URLs to Firestore
+    await addDoc(collection(db, "products"), {
+      product_title,
+      product_description,
+      product_short_description,
+      product_price,
+      product_url,
+      category,
+      featureImageUrls,
+      product_type,
+      product_number_sin,
+      specifications,
+      about_items,
+      tags,
+      categoryType,
+      createdAt: Timestamp.now(),
+    });
+
+    toast.success("Product added successfully", toastStyle);
+  } catch (error) {
+    console.log("ERROR PRODUCT:", error);
+    toast.error(error.message, toastStyle);
+  }
+}
+
+// GET PRODUCT COLLECTION
+export async function getProducts() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "products"));
+    const productItems = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return productItems;
+  } catch (error) {
+    console.error("Error fetching product items:", error);
+    toast.error("Failed to fetch product items", toastStyle);
     return [];
   }
 }

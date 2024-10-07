@@ -12,3 +12,5 @@ export const toastStyle = {
   theme: "colored",
   transition: Bounce,
 };
+
+export const productType = [{ name: "Most Popular" }, { name: "Normal" }];

@@ -12,6 +12,7 @@ const InputFormControl = forwardRef(function InputFormControl(
     name,
     rows,
     inputMode,
+    onKeyDown,
     value,
     onChange,
     disabled,
@@ -37,6 +38,7 @@ const InputFormControl = forwardRef(function InputFormControl(
           name={name}
           rows={rows}
           inputMode={inputMode}
+          onKeyDown={onKeyDown}
           ref={ref}
           disabled={disabled}
           value={value}
