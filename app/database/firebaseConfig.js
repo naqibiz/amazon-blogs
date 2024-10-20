@@ -197,7 +197,7 @@ export async function addContactUs(contactInfo) {
       createdAt: Timestamp.now(),
     });
 
-    toast.success("Contact message added successfully", toastStyle);
+    // toast.success("Contact message added successfully", toastStyle);
   } catch (error) {
     console.log("ERROR CONTACT:", error);
     toast.error(error.message, toastStyle);
@@ -304,13 +304,30 @@ export async function addProduct(products) {
     const featureImageUrls = [];
 
     for (const image of feature_images) {
-      const storageRef = ref(storage, `/productImages/${image.name}`);
-      await uploadBytes(storageRef, image);
-      const url = await getDownloadURL(storageRef);
-      featureImageUrls.push(url);
+      if (image instanceof File) {
+        try {
+          const storageRef = ref(storage, `/productImages/${image.name}`);
+          console.log("Uploading image:", image.name);
+
+          const uploadResult = await uploadBytes(storageRef, image);
+          console.log("Upload Result:", uploadResult);
+
+          const url = await getDownloadURL(storageRef);
+          console.log("Download URL:", url);
+
+          // Push image URL to array
+          featureImageUrls.push(url);
+        } catch (err) {
+          console.error("Upload error:", err);
+          toast.error(`Failed to upload image: ${image.name}`, toastStyle);
+        }
+      } else {
+        console.error("Invalid file type:", image);
+        toast.error("Invalid image file", toastStyle);
+      }
     }
 
-    // Save product data along with image URLs to Firestore
+    // Add product data along with uploaded image URLs to Firestore
     await addDoc(collection(db, "products"), {
       product_title,
       product_description,

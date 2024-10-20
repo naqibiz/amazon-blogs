@@ -2,14 +2,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Col, Container, Form, Row } from "react-bootstrap";
 import InputFormControl from "../InputFormControl/InputFormControl";
-import PhoneInput from "react-phone-input-international";
-import "react-phone-input-international/lib/style.css";
 import Button from "../Button/Button";
 import HeadContent from "../HeadContent/HeadContent";
 import { toast } from "react-toastify";
 import { toastStyle } from "@/app/_method/utils";
 import { addContactUs } from "@/app/database/firebaseConfig";
 import axios from "axios";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 
 const ContactUs = () => {
   const [loading, setLoading] = useState(false);
@@ -32,67 +32,55 @@ const ContactUs = () => {
 
   const regex =
     /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-  const email_address = form.email;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Add new contact
+    // Check if email is valid
+    if (!regex.test(form.email)) {
+      toast.error("Invalid email address", toastStyle);
+      return;
+    }
+
     setLoading(true);
+
     try {
-      await addContactUs({
-        fullname: form.firstname + " " + form.lastname,
-        firstname: form.firstname,
-        lastname: form.lastname,
-        phone: form.phone,
+      // Step 1: Attempt to send data to the API
+      const response = await axios.post("/api/contact", {
         email: form.email,
         message: form.message,
       });
-      setForm({
-        firstname: "",
-        lastname: "",
-        phone: "",
-        email: "",
-        message: "",
-      });
+
+      if (response.status === 200) {
+        // Step 2: If the API call succeeds, add new contact data to Firebase
+        await addContactUs({
+          fullname: form.firstname + " " + form.lastname,
+          firstname: form.firstname,
+          lastname: form.lastname,
+          phone: form.phone,
+          email: form.email,
+          message: form.message,
+        });
+
+        // Success message and reset form fields
+        toast.success("Message sent successfully!", toastStyle);
+        setForm({
+          firstname: "",
+          lastname: "",
+          phone: "",
+          email: "",
+          message: "",
+        });
+      } else {
+        toast.error("Failed to send message", toastStyle);
+      }
     } catch (error) {
       console.error("Error submitting contact:", error);
+      toast.error("Something went wrong. Please try again later.", toastStyle);
     } finally {
       setLoading(false);
     }
   };
-
-  // const handleSubmitMail = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   try {
-  //     const response = await fetch("/api/contact", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(form),
-  //     });
-  //     const data = await response.json();
-  //     if (data.success) {
-  //       alert("Email sent successfully!");
-  //     } else {
-  //       alert("Error sending email.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     alert("Error submitting form.");
-  //   } finally {
-  //     setLoading(false);
-  //     setForm({
-  //       firstname: "",
-  //       lastname: "",
-  //       phone: "",
-  //       email: "",
-  //       message: "",
-  //     });
-  //   }
-  // };
 
   return (
     <div className="contact_us_Page">
@@ -129,7 +117,7 @@ const ContactUs = () => {
               </div>
               <div className="row">
                 <div className="col-md-6">
-                  <PhoneInput
+                  {/* <PhoneInputInternational
                     name="phone"
                     country="us"
                     value={form?.phone}
@@ -142,6 +130,20 @@ const ContactUs = () => {
                       required: true,
                     }}
                     containerClass="phone_input_international"
+                  /> */}
+
+                  <PhoneInput
+                    name="phone"
+                    defaultCountry="us"
+                    value={form?.phone}
+                    onChange={(number) =>
+                      setForm((prev) => ({ ...prev, phone: number }))
+                    }
+                    placeholder="Phone Number"
+                    inputProps={{
+                      required: true,
+                    }}
+                    className="input_phone_international"
                   />
                 </div>
                 <div className="col-md-6">

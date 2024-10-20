@@ -1,38 +1,36 @@
 import nodemailer from "nodemailer";
+import { NextResponse } from "next/server";
 
-export async function POST(req) {
+export const POST = async (request) => {
+  const { email, message } = await request.json();
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "New Contact Form Submission",
+    text: message,
+    html: `<h1>Contact Form Submission</h1><p>${message} ${email}</p>`,
+  };
+
   try {
-    const { firstname, lastname, phone, email, message } = await req.json();
-
-    // Create transporter object
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    // Send email
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER, // The email that will appear as the sender
-      to: process.env.EMAIL_USER, // Your email (the owner who will receive the messages)
-      subject: "New Contact Form Submission",
-      html: `
-        <h1>New Contact Submission</h1>
-        <p><strong>Full Name:</strong> ${firstname} ${lastname}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong> ${message}</p>
-      `,
-    });
-
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    await transporter.sendMail(mailOptions);
+    return NextResponse.json(
+      { message: "Contact message sent successfully" },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error sending email:", error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+    console.log("error", error);
+    return NextResponse.json(
+      { message: "Error sending message" },
       { status: 500 }
     );
   }
-}
+};
