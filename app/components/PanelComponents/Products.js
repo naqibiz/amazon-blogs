@@ -36,7 +36,7 @@ const Products = () => {
   const [categoryType, setCategoryType] = useState("");
   const [loading, setLoading] = useState(false);
 
-  console.log(categoryType, "categoryTypecategoryType");
+  console.log(uploadedFiles, "uploadedFilesuploadedFiles");
 
   const predefinedLabels = [
     "Compatible Mountings",
@@ -168,7 +168,7 @@ const Products = () => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setUploadedFiles(files);
+      setUploadedFiles((prev) => [...prev, ...files]);
       const newImages = files.map((file) => URL.createObjectURL(file));
       setUploadedImages((prev) => [...prev, ...newImages]);
     }
@@ -192,7 +192,7 @@ const Products = () => {
         product_url: form.product_url,
         category: form.category,
         product_type: form.product_type,
-        featureImageUrls: uploadedFiles,
+        feature_images: uploadedFiles,
         product_number_sin: form.product_number_sin,
         specifications: form.specifications,
         about_items: form.about_items,

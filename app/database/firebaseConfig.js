@@ -34,7 +34,6 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-export const firebasestorage = getStorage(app);
 
 // SIGNUP USER
 export async function register(userInfo) {
@@ -289,6 +288,11 @@ export async function addProduct(products) {
       categoryType,
     } = products;
 
+    if (!Array.isArray(feature_images) || feature_images.length === 0) {
+      toast.error("No feature images selected.", toastStyle);
+      return;
+    }
+
     const productsRef = collection(db, "products");
     const q = query(
       productsRef,
@@ -301,33 +305,20 @@ export async function addProduct(products) {
       return;
     }
 
-    const featureImageUrls = [];
+    const imageUrls = [];
 
     for (const image of feature_images) {
-      if (image instanceof File) {
-        try {
-          const storageRef = ref(storage, `/productImages/${image.name}`);
-          console.log("Uploading image:", image.name);
-
-          const uploadResult = await uploadBytes(storageRef, image);
-          console.log("Upload Result:", uploadResult);
-
-          const url = await getDownloadURL(storageRef);
-          console.log("Download URL:", url);
-
-          // Push image URL to array
-          featureImageUrls.push(url);
-        } catch (err) {
-          console.error("Upload error:", err);
-          toast.error(`Failed to upload image: ${image.name}`, toastStyle);
-        }
+      if (image && image.name) {
+        console.log("Uploading image:", image.name);
+        const storageRef = ref(storage, `product/${image.name}`);
+        await uploadBytes(storageRef, image);
+        const url = await getDownloadURL(storageRef);
+        imageUrls.push(url);
       } else {
-        console.error("Invalid file type:", image);
-        toast.error("Invalid image file", toastStyle);
+        console.error("Invalid image:", image);
       }
     }
 
-    // Add product data along with uploaded image URLs to Firestore
     await addDoc(collection(db, "products"), {
       product_title,
       product_description,
@@ -335,7 +326,7 @@ export async function addProduct(products) {
       product_price,
       product_url,
       category,
-      featureImageUrls,
+      imageUrls,
       product_type,
       product_number_sin,
       specifications,
