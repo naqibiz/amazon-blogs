@@ -1,35 +1,34 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import PanelHead from "../../PanelHead/PanelHead";
+import { deleteProduct, getProducts } from "@/app/database/firebaseConfig";
 import DataTable from "../../DataTable/DataTable";
-import {
-  deleteCategoryCollections,
-  getCategoryCollections,
-} from "@/app/database/firebaseConfig";
+import NotFound from "../../NotFound/NotFound";
 import PageLoader from "../../PageLoader/PageLoader";
+import { useRouter } from "next/navigation";
 import { Modal } from "react-bootstrap";
 import Button from "../../Button/Button";
-import NotFound from "../../NotFound/NotFound";
-import { useRouter } from "next/navigation";
 
-const CategoryList = () => {
-  const [categoryItems, setCategoryItems] = useState([]);
+const ProductList = () => {
+  const [productItems, setProductItems] = useState([]);
+  const [isFetched, setIsFetched] = useState(false);
   const [loader, setLoader] = useState(false);
   const [loaderDelete, setLoaderDelete] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [dataId, setDataId] = useState("");
-  const [categoryName, setCategoryName] = useState("");
+  const [productName, setProductName] = useState("");
   const router = useRouter();
-  const [isFetched, setIsFetched] = useState(false);
+
+  console.log(productItems, "productItems---new");
 
   useEffect(() => {
-    const fetchCategoryItems = async () => {
+    const fetchProductItems = async () => {
       try {
         setLoader(true);
-        const items = await getCategoryCollections();
-        setCategoryItems(items);
+        const items = await getProducts();
+        setProductItems(items);
       } catch (error) {
-        console.error("Error fetching category items:", error);
+        console.error("Error fetching product items:", error);
       } finally {
         setLoader(false);
         setIsFetched(true);
@@ -37,31 +36,33 @@ const CategoryList = () => {
     };
 
     if (!isFetched) {
-      fetchCategoryItems();
+      fetchProductItems();
     }
   }, [isFetched]);
 
   const handleDeleteClose = () => setShowDelete(false);
 
   const handleUpdate = (id) => {
-    router.push(`/panel/categories/add-new-category?id=${id}`);
+    router.push(`/panel/products/add-new-product?id=${id}`);
   };
 
   const handleDelete = (id) => {
-    const selectedCategory = categoryItems.find((item) => item.id === id);
+    const selectedProduct = productItems.find((item) => item.id === id);
     setDataId(id);
-    setCategoryName(selectedCategory?.category_name || "");
+    setProductName(selectedProduct?.product_title || "");
     setShowDelete(true);
   };
+
+  console.log(dataId, "dataId----<>");
 
   const confirmDelete = async () => {
     try {
       setLoaderDelete(true);
-      await deleteCategoryCollections(dataId);
-      setCategoryItems(categoryItems.filter((item) => item.id !== dataId));
+      await deleteProduct(dataId);
+      setProductItems(productItems.filter((item) => item.id !== dataId));
     } catch (error) {
-      console.error("Error deleting category:", error);
-      toast.error("Failed to delete category");
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product");
     } finally {
       setLoaderDelete(false);
       handleDeleteClose();
@@ -69,10 +70,19 @@ const CategoryList = () => {
   };
 
   const columns = [
-    { key: "category_name", label: "Category Name" },
-    { key: "category_slug", label: "Category Slug" },
-    { key: "action", label: "Action", width: "150px" },
+    { key: "product_title", label: "Product Name" },
+    { key: "category", label: "Category" },
+    { key: "product_price", label: "Price" },
+    { key: "product_type", label: "Product Type" },
+    { key: "createdAt", label: "Date" },
+    { key: "action", label: "Action" },
   ];
+
+  const formattedProductList = productItems.map((item) => ({
+    ...item,
+    product_price: item.product_price ? `$${item.product_price}` : "N/A",
+    createdAt: item.createdAt ? new Date(item.createdAt).toDateString() : "N/A",
+  }));
 
   return (
     <>
@@ -83,11 +93,11 @@ const CategoryList = () => {
         keyboard={false}
       >
         <Modal.Header>
-          <Modal.Title>Delete Category</Modal.Title>
+          <Modal.Title>Delete Product</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete this category{" "}
-          <strong>{categoryName}</strong>?
+          Are you sure you want to delete this product{" "}
+          <strong>{productName}</strong>?
         </Modal.Body>
         <Modal.Footer>
           <div className="modal_footer_buttons">
@@ -101,22 +111,21 @@ const CategoryList = () => {
           </div>
         </Modal.Footer>
       </Modal>
-
       <div>
         <PanelHead
-          tittle="Categories"
-          btnLinkTitle="Add New Category"
-          btnLink="/panel/categories/add-new-category"
+          tittle="Products"
+          btnLinkTitle="Add New Product"
+          btnLink="/panel/products/add-new-product"
         />
 
         <div className="data_table">
           {loader ? (
             <PageLoader />
-          ) : categoryItems.length === 0 ? (
+          ) : productItems.length === 0 ? (
             <NotFound />
           ) : (
             <DataTable
-              data={categoryItems}
+              data={formattedProductList}
               columns={columns}
               rowsPerPage={10}
               onEdit={handleUpdate}
@@ -129,4 +138,4 @@ const CategoryList = () => {
   );
 };
 
-export default CategoryList;
+export default ProductList;

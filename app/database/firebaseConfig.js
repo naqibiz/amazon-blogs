@@ -10,6 +10,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   query,
@@ -17,9 +18,16 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import {
+  deleteObject,
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 import { toast } from "react-toastify";
 import { toastStyle } from "../_method/utils";
+import { v4 as uuidv4 } from "uuid";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -305,18 +313,32 @@ export async function addProduct(products) {
       return;
     }
 
-    const imageUrls = [];
-
-    for (const image of feature_images) {
+    const imageUploadPromises = feature_images.map(async (image) => {
       if (image && image.name) {
-        console.log("Uploading image:", image.name);
-        const storageRef = ref(storage, `product/${image.name}`);
-        await uploadBytes(storageRef, image);
-        const url = await getDownloadURL(storageRef);
-        imageUrls.push(url);
+        try {
+          const uniqueId = uuidv4();
+          const newImageName = `${uniqueId}-${image.name}`;
+
+          const storageRef = ref(storage, `product/${newImageName}`);
+          await uploadBytes(storageRef, image);
+          const url = await getDownloadURL(storageRef);
+
+          return { url, path: storageRef.fullPath };
+        } catch (err) {
+          console.error("Failed to upload image:", image.name, err);
+          return null;
+        }
       } else {
         console.error("Invalid image:", image);
+        return null;
       }
+    });
+
+    const imageUrls = (await Promise.all(imageUploadPromises)).filter(Boolean);
+
+    if (imageUrls.length === 0) {
+      toast.error("Failed to upload images.", toastStyle);
+      return;
     }
 
     await addDoc(collection(db, "products"), {
@@ -350,11 +372,75 @@ export async function getProducts() {
     const productItems = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
+      createdAt: doc.data().createdAt ? doc.data().createdAt.toDate() : null,
     }));
     return productItems;
   } catch (error) {
     console.error("Error fetching product items:", error);
     toast.error("Failed to fetch product items", toastStyle);
     return [];
+  }
+}
+
+// UPDATE PRODUCT FUNCTION
+export async function updateProduct(productId, updatedData, newImages) {
+  try {
+    const productRef = doc(db, "products", productId);
+
+    const productSnapshot = await getDoc(productRef);
+    const existingImages = productSnapshot.exists()
+      ? productSnapshot.data().imageUrls || []
+      : [];
+
+    const updatedImageUrls = [];
+
+    for (const image of newImages) {
+      if (image && image.name) {
+        const uniqueId = uuidv4();
+        const newImageName = `${uniqueId}-${image.name}`;
+
+        const storageRef = ref(storage, `product/${newImageName}`);
+        await uploadBytes(storageRef, image);
+        const url = await getDownloadURL(storageRef);
+        updatedImageUrls.push({ url, path: storageRef.fullPath });
+      }
+    }
+
+    const finalImageUrls = [...existingImages, ...updatedImageUrls];
+
+    await updateDoc(productRef, { ...updatedData, imageUrls: finalImageUrls });
+
+    toast.success("Product updated successfully", toastStyle);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    toast.error("Failed to update product", toastStyle);
+  }
+}
+
+// DELETE PRODUCT COLLECTION
+export async function deleteProduct(id) {
+  try {
+    const productDoc = doc(db, "products", id);
+    const productSnapshot = await getDoc(productDoc);
+
+    if (productSnapshot.exists()) {
+      const productData = productSnapshot.data();
+
+      const imageDeletions = productData.imageUrls.map(async (image) => {
+        const imageRef = ref(storage, image.path);
+        await deleteObject(imageRef);
+      });
+
+      await Promise.all(imageDeletions);
+
+      await deleteDoc(productDoc);
+
+      toast.success("Product deleted successfully", toastStyle);
+    } else {
+      toast.error("Product not found", toastStyle);
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    toast.error(error.message, toastStyle);
   }
 }

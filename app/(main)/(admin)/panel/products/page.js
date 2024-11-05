@@ -1,10 +1,10 @@
-import Products from "@/app/components/PanelComponents/Products";
+import ProductList from "@/app/components/PanelComponents/Products/ProductList";
 import React from "react";
 
 const productIndex = () => {
   return (
     <div>
-      <Products />
+      <ProductList />
     </div>
   );
 };

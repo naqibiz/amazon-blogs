@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import PanelHead from "../PanelHead/PanelHead";
+import PanelHead from "../../PanelHead/PanelHead";
 import { Col, Form, Row } from "react-bootstrap";
-import InputFormControl from "../InputFormControl/InputFormControl";
+import InputFormControl from "../../InputFormControl/InputFormControl";
 import { FaPlus, FaRegTrashCan, FaTrashCan } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 import { MdOutlineCloudUpload } from "react-icons/md";
@@ -10,9 +10,9 @@ import {
   addProduct,
   getCategoryCollections,
 } from "@/app/database/firebaseConfig";
-import Dropdown from "../Dropdown/Dropdown";
+import Dropdown from "../../Dropdown/Dropdown";
 import { productType } from "@/app/_method/utils";
-import Button from "../Button/Button";
+import Button from "../../Button/Button";
 
 const Products = () => {
   const [form, setForm] = useState({

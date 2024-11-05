@@ -1460,7 +1460,7 @@ footer.footer_section {
   height: 105px;
   width: 105px;
   background-position: center;
-  background-size: contain;
+  background-size: cover;
   background-repeat: no-repeat;
   border: 1px solid;
   border-radius: 10px;
@@ -1502,7 +1502,7 @@ footer.footer_section {
   justify-content: flex-end;
 }
 .product_side_section .add_new_product_btn .custom_buttom {
-  width: 180px;
+  width: 230px;
 }
 
 input,
