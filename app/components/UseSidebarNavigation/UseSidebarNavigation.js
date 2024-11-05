@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 import useAuthRedirect from "../useAuthRedirect/useAuthRedirect";
+import { RiArrowRightSLine } from "react-icons/ri";
 
 const UseSidebarNavigation = () => {
   const pathname = usePathname();
@@ -24,7 +25,7 @@ const UseSidebarNavigation = () => {
         {sidebarNavigation && sidebarNavigation?.length > 0 && (
           <div className="navigation_links">
             {sidebarNavigation?.map((item, i) => (
-              <div key={i}>
+              <div key={i} className="navigation_links_grid">
                 <Link href={item?.route}>
                   {item?.icon} {item?.name}
                 </Link>

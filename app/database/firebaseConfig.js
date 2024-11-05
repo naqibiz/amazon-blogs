@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import {
   addDoc,
@@ -47,7 +48,12 @@ const storage = getStorage(app);
 export async function register(userInfo) {
   try {
     const { email, password, fullName } = userInfo;
-    await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    await updateProfile(userCredential.user, { displayName: fullName });
     await addDoc(collection(db, "users"), {
       fullName,
       email,

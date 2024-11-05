@@ -29,8 +29,26 @@ const AddUser = ({ setAuthType }) => {
     }));
   };
 
+  const validatePassword = (password) => {
+    const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
+    return regex.test(password);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (form.password && form.confirmPassword) {
+      if (
+        !validatePassword(form.password) ||
+        !validatePassword(form.confirmPassword)
+      ) {
+        toast.error(
+          "Password must be 8+ characters with uppercase, lowercase, number, and special character.",
+          toastStyle
+        );
+        return;
+      }
+    }
 
     if (form.password !== form.confirmPassword) {
       toast.error("Password is not match", toastStyle);
