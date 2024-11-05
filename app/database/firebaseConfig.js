@@ -450,3 +450,53 @@ export async function deleteProduct(id) {
     toast.error(error.message, toastStyle);
   }
 }
+
+// DASHBOARD (OVERVIEW) FUNCTION
+export async function getDashboardOverview() {
+  try {
+    const categoriesRef = collection(db, "categories");
+    const productsRef = collection(db, "products");
+    const subscriptionsRef = collection(db, "subscription");
+    const contactUsRef = collection(db, "contactus");
+    const usersRef = collection(db, "users");
+
+    const [
+      categoriesSnapshot,
+      productsSnapshot,
+      subscriptionsSnapshot,
+      contactUsSnapshot,
+      usersSnapshot,
+    ] = await Promise.all([
+      getDocs(categoriesRef),
+      getDocs(productsRef),
+      getDocs(subscriptionsRef),
+      getDocs(contactUsRef),
+      getDocs(usersRef),
+    ]);
+
+    const overviewData = {
+      categories: categoriesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })),
+      products: productsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })),
+      subscriptions: subscriptionsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })),
+      contactUs: contactUsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })),
+      users: usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+    };
+
+    return overviewData;
+  } catch (error) {
+    console.error("Error fetching dashboard overview:", error);
+    throw new Error("Dashboard overview fetching failed");
+  }
+}
