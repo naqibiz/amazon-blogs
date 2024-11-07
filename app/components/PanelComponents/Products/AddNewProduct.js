@@ -37,6 +37,7 @@ const AddNewProduct = ({ data }) => {
   const [tagInput, setTagInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [removedImagesPaths, setRemovedImagesPaths] = useState([]);
   const [categoryItems, setCategoryItems] = useState([]);
   const [categoryType, setCategoryType] = useState("");
   const [productItems, setProductItems] = useState([]);
@@ -185,7 +186,15 @@ const AddNewProduct = ({ data }) => {
 
   const removeImage = (index) => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+
+    const removedFile = uploadedFiles[index];
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+
+    if (removedFile && typeof removedFile === "string") {
+      setRemovedImagesPaths((prev) => [...prev, removedFile]);
+    } else if (removedFile && removedFile.path) {
+      setRemovedImagesPaths((prev) => [...prev, removedFile.path]);
+    }
   };
 
   useEffect(() => {
@@ -201,13 +210,6 @@ const AddNewProduct = ({ data }) => {
     fetchProductItems();
   }, []);
 
-  console.log(
-    { form: form, categoryType: categoryType, uploadedFiles: uploadedFiles },
-    "retrieve---data"
-  );
-
-  console.log(categoryType, "categoryType===<>");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -220,7 +222,12 @@ const AddNewProduct = ({ data }) => {
       // Update product
       setLoadingUpdate(true);
       try {
-        await updateProduct(data?.id, productData, uploadedFiles);
+        await updateProduct(
+          data?.id,
+          productData,
+          uploadedFiles,
+          removedImagesPaths
+        );
         router.push("/panel/products");
       } catch (error) {
         console.error("Error updating product:", error);
@@ -458,7 +465,7 @@ const AddNewProduct = ({ data }) => {
             </Col>
             <Col md={5}>
               <div className="product_side_section">
-                <div className="product_feature_imafes_section">
+                <div className="product_feature_images_section">
                   <label class="input-label form-label">
                     Product Feature Images
                   </label>

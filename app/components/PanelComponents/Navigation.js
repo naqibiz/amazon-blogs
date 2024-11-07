@@ -190,15 +190,6 @@ const Navigation = () => {
           <Row>
             <Col lg={6}>
               <Form onSubmit={handleSubmit}>
-                <InputFormControl
-                  required={true}
-                  label="Navigation Name"
-                  type="text"
-                  name="nav_name"
-                  onChange={handleFormChange}
-                  value={form.nav_name}
-                />
-
                 <Dropdown
                   label="Select Category"
                   searchable={true}
@@ -224,6 +215,15 @@ const Navigation = () => {
                   readOnly
                 />
 
+                <InputFormControl
+                  required={true}
+                  label="Navigation Name"
+                  type="text"
+                  name="nav_name"
+                  onChange={handleFormChange}
+                  value={form.nav_name}
+                />
+
                 <Button
                   btnTitle={`${
                     updateStatus
@@ -235,7 +235,7 @@ const Navigation = () => {
                 />
               </Form>
             </Col>
-            <Col lg={5}>
+            <Col lg={6}>
               {navLoading ? (
                 <PageLoader />
               ) : (

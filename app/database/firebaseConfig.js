@@ -145,10 +145,46 @@ export async function deleteNavigationItem(id) {
 // ADD CATEGORY COLLECTION
 export async function addCategoryCollection(categoryInfo) {
   try {
-    const { category_name, category_slug } = categoryInfo;
+    const { category_name, category_slug, feature_images = [] } = categoryInfo;
+
+    if (!Array.isArray(feature_images) || feature_images.length === 0) {
+      toast.error("No feature images selected.", toastStyle);
+      return;
+    }
+
+    const imageUploadPromises = feature_images.map(async (image) => {
+      if (image && image.name) {
+        try {
+          const uniqueId = uuidv4();
+          const newImageName = `${uniqueId}-${image.name}`;
+
+          const storageRef = ref(storage, `category/${newImageName}`);
+          await uploadBytes(storageRef, image);
+          const url = await getDownloadURL(storageRef);
+
+          return { url, path: storageRef.fullPath };
+        } catch (err) {
+          console.error("Failed to upload image:", image.name, err);
+          return null;
+        }
+      } else {
+        console.error("Invalid image:", image);
+        return null;
+      }
+    });
+
+    const imageUrls = (await Promise.all(imageUploadPromises)).filter(Boolean);
+
+    if (imageUrls.length === 0) {
+      toast.error("Failed to upload images.", toastStyle);
+      return;
+    }
+
     await addDoc(collection(db, "categories"), {
       category_name,
       category_slug,
+      imageUrls,
+      createdAt: Timestamp.now(),
     });
 
     toast.success("Category added successfully", toastStyle);
@@ -174,10 +210,47 @@ export async function getCategoryCollections() {
 }
 
 // UPDATE CATEGORY COLLECTION
-export async function updateCategoryCollections(id, updatedData) {
+export async function updateCategoryCollections(
+  id,
+  updatedData,
+  newImages,
+  removedImagesPaths
+) {
   try {
     const categoryDoc = doc(db, "categories", id);
-    await updateDoc(categoryDoc, updatedData);
+
+    const categorySnapshot = await getDoc(categoryDoc);
+    const existingImages = categorySnapshot.exists()
+      ? categorySnapshot.data().imageUrls || []
+      : [];
+
+    const filteredExistingImages = existingImages.filter(
+      (image) => !removedImagesPaths.includes(image.path)
+    );
+
+    for (const removedPath of removedImagesPaths) {
+      const storageRef = ref(storage, removedPath);
+      await deleteObject(storageRef);
+    }
+
+    const updatedImageUrls = [];
+
+    for (const image of newImages) {
+      if (image && image.name) {
+        const uniqueId = uuidv4();
+        const newImageName = `${uniqueId}-${image.name}`;
+
+        const storageRef = ref(storage, `category/${newImageName}`);
+        await uploadBytes(storageRef, image);
+        const url = await getDownloadURL(storageRef);
+        updatedImageUrls.push({ url, path: storageRef.fullPath });
+      }
+    }
+
+    const finalImageUrls = [...filteredExistingImages, ...updatedImageUrls];
+
+    await updateDoc(categoryDoc, { ...updatedData, imageUrls: finalImageUrls });
+
     toast.success("Category updated successfully", toastStyle);
   } catch (error) {
     toast.error(error.message, toastStyle);
@@ -188,8 +261,24 @@ export async function updateCategoryCollections(id, updatedData) {
 export async function deleteCategoryCollections(id) {
   try {
     const categoryDoc = doc(db, "categories", id);
-    await deleteDoc(categoryDoc);
-    toast.success("Category deleted successfully", toastStyle);
+    const categorySnapshot = await getDoc(productDoc);
+
+    if (categorySnapshot.exists()) {
+      const productData = categorySnapshot.data();
+
+      const imageDeletions = productData.imageUrls.map(async (image) => {
+        const imageRef = ref(storage, image.path);
+        await deleteObject(imageRef);
+      });
+
+      await Promise.all(imageDeletions);
+
+      await deleteDoc(categoryDoc);
+
+      toast.success("Category deleted successfully", toastStyle);
+    } else {
+      toast.error("Product not found", toastStyle);
+    }
   } catch (error) {
     toast.error(error.message, toastStyle);
   }
@@ -389,7 +478,12 @@ export async function getProducts() {
 }
 
 // UPDATE PRODUCT FUNCTION
-export async function updateProduct(productId, updatedData, newImages) {
+export async function updateProduct(
+  productId,
+  updatedData,
+  newImages,
+  removedImagesPaths
+) {
   try {
     const productRef = doc(db, "products", productId);
 
@@ -397,6 +491,15 @@ export async function updateProduct(productId, updatedData, newImages) {
     const existingImages = productSnapshot.exists()
       ? productSnapshot.data().imageUrls || []
       : [];
+
+    const filteredExistingImages = existingImages.filter(
+      (image) => !removedImagesPaths.includes(image.path)
+    );
+
+    for (const removedPath of removedImagesPaths) {
+      const storageRef = ref(storage, removedPath);
+      await deleteObject(storageRef);
+    }
 
     const updatedImageUrls = [];
 
@@ -412,7 +515,7 @@ export async function updateProduct(productId, updatedData, newImages) {
       }
     }
 
-    const finalImageUrls = [...existingImages, ...updatedImageUrls];
+    const finalImageUrls = [...filteredExistingImages, ...updatedImageUrls];
 
     await updateDoc(productRef, { ...updatedData, imageUrls: finalImageUrls });
 
