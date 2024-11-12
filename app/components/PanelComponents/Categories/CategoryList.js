@@ -22,6 +22,8 @@ const CategoryList = () => {
   const router = useRouter();
   const [isFetched, setIsFetched] = useState(false);
 
+  console.log(categoryItems, "categoryItems===<>");
+
   useEffect(() => {
     const fetchCategoryItems = async () => {
       try {
@@ -69,8 +71,10 @@ const CategoryList = () => {
   };
 
   const columns = [
+    { key: "imageUrls", label: "Category Image" },
     { key: "category_name", label: "Category Name" },
     { key: "category_slug", label: "Category Slug" },
+    { key: "category_type", label: "Category Type" },
     { key: "action", label: "Action", width: "150px" },
   ];
 
@@ -109,7 +113,7 @@ const CategoryList = () => {
           btnLink="/panel/categories/add-new-category"
         />
 
-        <div className="data_table">
+        <div className="data_table category_data_table">
           {loader ? (
             <PageLoader />
           ) : categoryItems.length === 0 ? (

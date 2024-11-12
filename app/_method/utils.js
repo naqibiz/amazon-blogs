@@ -14,3 +14,4 @@ export const toastStyle = {
 };
 
 export const productType = [{ name: "Most Popular" }, { name: "Normal" }];
+export const categoryType = [{ name: "Most Popular" }, { name: "Normal" }];

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import useAuthRedirect from "../useAuthRedirect/useAuthRedirect";
 import { RiArrowRightSLine } from "react-icons/ri";
+import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
 
 const UseSidebarNavigation = () => {
   const pathname = usePathname();
@@ -15,9 +16,19 @@ const UseSidebarNavigation = () => {
     <section className="use_navigation_wrapper">
       <div className="header_content">
         <img src="/assets/images/amazon-icon.svg" alt="" />
+
         <div className="user_detail">
-          <p>{currentUser?.displayName}</p>
-          <p>{currentUser?.email}</p>
+          {currentUser ? (
+            <>
+              <p>{currentUser?.displayName}</p>
+              <p>{currentUser?.email}</p>
+            </>
+          ) : (
+            <>
+              <SkeletonLoader height={12} width={150} />
+              <SkeletonLoader height={12} width={150} />
+            </>
+          )}
         </div>
       </div>
 

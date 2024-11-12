@@ -11,6 +11,11 @@ const Authentication = () => {
   return (
     <div className="authentication_switch">
       <Container>
+        <div className="auth_header_logo">
+          <div className="header_logo">
+            <img src="/assets/images/dark-logo.svg" alt="" />
+          </div>
+        </div>
         <Row>
           <Col lg={6} className="offset-md-3">
             <div className="change_auth_type">

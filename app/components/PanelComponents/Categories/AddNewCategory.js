@@ -13,11 +13,15 @@ import {
 import { useRouter } from "next/navigation";
 import { FaTrashCan } from "react-icons/fa6";
 import { MdOutlineCloudUpload } from "react-icons/md";
+import Dropdown from "../../Dropdown/Dropdown";
+import { categoryType, toastStyle } from "@/app/_method/utils";
+import { toast } from "react-toastify";
 
 const AddNewCategory = ({ data }) => {
   console.log(data?.id, "data id");
   const [form, setForm] = useState({
     category_name: "",
+    category_type: "",
   });
   const router = useRouter();
   const fileInputRef = useRef(null);
@@ -31,8 +35,34 @@ const AddNewCategory = ({ data }) => {
   const [removedImagesPaths, setRemovedImagesPaths] = useState([]);
 
   useEffect(() => {
-    setCategorySlug(convertToSlug(form.category_name));
+    setCategorySlug(
+      form.category_name.trim().replace(/\s+/g, "-").toLowerCase()
+    );
   }, [form.category_name]);
+
+  useEffect(() => {
+    if (!data?.id) return;
+
+    const fetchCategories = async () => {
+      try {
+        const items = await getCategoryCollections();
+        setCategoryItems(items);
+        const currentCategory = items.find((item) => item?.id === data?.id);
+        if (currentCategory) {
+          setForm({
+            category_name: currentCategory.category_name,
+            category_type: currentCategory.category_type,
+          });
+          setUploadedFiles(currentCategory.imageUrls || []);
+          setUploadedImages(currentCategory.imageUrls || []);
+          setUpdateStatus(true);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, [data?.id]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -42,25 +72,17 @@ const AddNewCategory = ({ data }) => {
     }));
   };
 
-  const convertToSlug = (name) => {
-    return name.trim().replace(/\s+/g, "-").toLowerCase();
-  };
-
-  useEffect(() => {
-    const fetchCategoryItems = async () => {
-      try {
-        const items = await getCategoryCollections();
-        setCategoryItems(items);
-      } catch (error) {
-        console.error("Error fetching category items:", error);
-      }
-    };
-
-    fetchCategoryItems();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (
+      !form.category_name ||
+      !form.category_type ||
+      uploadedFiles.length === 0
+    ) {
+      toast.error("All fields are required.", toastStyle);
+      return;
+    }
 
     const categoryData = {
       ...form,
@@ -68,7 +90,6 @@ const AddNewCategory = ({ data }) => {
     };
 
     if (updateStatus) {
-      // Update category
       setLoadingUpdate(true);
       try {
         await updateCategoryCollections(
@@ -77,9 +98,6 @@ const AddNewCategory = ({ data }) => {
           uploadedFiles,
           removedImagesPaths
         );
-        setForm({
-          category_name: "",
-        });
         router.push("/panel/categories");
       } catch (error) {
         console.error("Error updating category:", error);
@@ -87,16 +105,17 @@ const AddNewCategory = ({ data }) => {
         setLoadingUpdate(false);
       }
     } else {
-      // Add new category
       setLoading(true);
       try {
         await addCategoryCollection({
           category_name: form.category_name,
+          category_type: form.category_type,
           category_slug: categorySlug,
           feature_images: uploadedFiles,
         });
         setForm({
           category_name: "",
+          category_type: "",
         });
         setUploadedImages([]);
         setUploadedFiles([]);
@@ -108,25 +127,6 @@ const AddNewCategory = ({ data }) => {
       }
     }
   };
-
-  const editFunction = () => {
-    const categoryData = categoryItems?.find((item) => item?.id === data?.id);
-
-    if (categoryData) {
-      setUpdateStatus(true);
-      setForm({
-        category_name: categoryData.category_name || "",
-      });
-
-      setUploadedFiles(categoryData.imageUrls || []);
-
-      setUploadedImages(categoryData.imageUrls || []);
-    }
-  };
-
-  useEffect(() => {
-    editFunction();
-  }, [categoryItems, data?.id]);
 
   const handleFileUploadClick = () => {
     fileInputRef.current.click();
@@ -162,6 +162,21 @@ const AddNewCategory = ({ data }) => {
         <Row>
           <Col lg={6}>
             <Form onSubmit={handleSubmit}>
+              <Dropdown
+                label="Select Category Type"
+                searchable={false}
+                searchPlaceholder="Select Category Type"
+                selectedValue={form.category_type}
+                setSelectedValue={(selectedType) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    category_type: selectedType?.name,
+                  }));
+                }}
+                data={categoryType}
+                searchKey="name"
+                displayKey="name"
+              />
               <InputFormControl
                 required={true}
                 label="Category Name"

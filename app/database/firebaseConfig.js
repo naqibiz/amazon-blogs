@@ -82,6 +82,8 @@ export async function login(userInfo) {
         "Invalid credentials. Please check your email and password.",
         toastStyle
       );
+    } else if (error.code === "auth/network-request-failed") {
+      toast.error("Something want wrong", toastStyle);
     } else {
       toast.error(error.message, toastStyle);
     }
@@ -91,11 +93,12 @@ export async function login(userInfo) {
 // ADD NAVIGATION
 export async function addNavigation(navInfo) {
   try {
-    const { nav_name, category, category_type } = navInfo;
+    const { nav_name, category, category_type, type } = navInfo;
     await addDoc(collection(db, "navigations"), {
       nav_name,
       category,
       category_type,
+      type,
     });
 
     toast.success("Navigation item added successfully", toastStyle);
@@ -145,7 +148,12 @@ export async function deleteNavigationItem(id) {
 // ADD CATEGORY COLLECTION
 export async function addCategoryCollection(categoryInfo) {
   try {
-    const { category_name, category_slug, feature_images = [] } = categoryInfo;
+    const {
+      category_name,
+      category_slug,
+      category_type,
+      feature_images = [],
+    } = categoryInfo;
 
     if (!Array.isArray(feature_images) || feature_images.length === 0) {
       toast.error("No feature images selected.", toastStyle);
@@ -183,6 +191,7 @@ export async function addCategoryCollection(categoryInfo) {
     await addDoc(collection(db, "categories"), {
       category_name,
       category_slug,
+      category_type,
       imageUrls,
       createdAt: Timestamp.now(),
     });
@@ -261,7 +270,7 @@ export async function updateCategoryCollections(
 export async function deleteCategoryCollections(id) {
   try {
     const categoryDoc = doc(db, "categories", id);
-    const categorySnapshot = await getDoc(productDoc);
+    const categorySnapshot = await getDoc(categoryDoc);
 
     if (categorySnapshot.exists()) {
       const productData = categorySnapshot.data();
@@ -280,6 +289,7 @@ export async function deleteCategoryCollections(id) {
       toast.error("Product not found", toastStyle);
     }
   } catch (error) {
+    console.log(error);
     toast.error(error.message, toastStyle);
   }
 }
@@ -577,15 +587,29 @@ export async function getDashboardOverview() {
       getDocs(usersRef),
     ]);
 
+    const allProducts = productsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const allCategories = categoriesSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
     const overviewData = {
-      categories: categoriesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })),
-      products: productsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })),
+      categories: {
+        all: allCategories,
+        mostPopular: allCategories.filter(
+          (categorie) => categorie.category_type === "Most Popular"
+        ),
+      },
+      products: {
+        all: allProducts,
+        mostPopular: allProducts.filter(
+          (product) => product.product_type === "Most Popular"
+        ),
+      },
       subscriptions: subscriptionsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),

@@ -70,6 +70,7 @@ const ProductList = () => {
   };
 
   const columns = [
+    { key: "imageUrls", label: "Product Image" },
     { key: "product_title", label: "Product Name" },
     { key: "category", label: "Category" },
     { key: "product_price", label: "Price" },
@@ -118,7 +119,7 @@ const ProductList = () => {
           btnLink="/panel/products/add-new-product"
         />
 
-        <div className="data_table">
+        <div className="data_table product_data_table">
           {loader ? (
             <PageLoader />
           ) : productItems.length === 0 ? (

@@ -13,9 +13,10 @@ import {
   updateProduct,
 } from "@/app/database/firebaseConfig";
 import Dropdown from "../../Dropdown/Dropdown";
-import { productType } from "@/app/_method/utils";
+import { productType, toastStyle } from "@/app/_method/utils";
 import Button from "../../Button/Button";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const AddNewProduct = ({ data }) => {
   console.log(data?.id, "data id product");
@@ -212,6 +213,25 @@ const AddNewProduct = ({ data }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const isFormIncomplete =
+      !form.product_title ||
+      !form.product_description ||
+      !form.product_short_description ||
+      !form.product_price ||
+      !form.product_url ||
+      !form.category ||
+      !form.product_type ||
+      !form.product_number_sin ||
+      form.specifications.length === 0 ||
+      form.about_items.length === 0 ||
+      form.tags.length === 0 ||
+      uploadedFiles.length === 0;
+
+    if (isFormIncomplete) {
+      toast.error("All fields are required.", toastStyle);
+      return;
+    }
 
     const productData = {
       ...form,

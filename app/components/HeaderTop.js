@@ -33,7 +33,7 @@ const HeaderTop = () => {
     <div className="header_top_content">
       <div className="header_logo">
         <Link href={"/"}>
-          <img src="/assets/images/logo-amazon.png" alt="" />
+          <img src="/assets/images/light-logo.svg" alt="" />
         </Link>
       </div>
       {pathname == "/admin-panel-auth" || panelRoute ? null : (

@@ -19,8 +19,8 @@ import PageLoader from "../PageLoader/PageLoader";
 
 const Navigation = () => {
   const [form, setForm] = useState({
-    nav_name: "",
     category: "",
+    nav_name: "",
   });
   const [loading, setLoading] = useState(false);
   const [navLoading, setNavLoading] = useState(false);
@@ -28,20 +28,36 @@ const Navigation = () => {
   const [categoryItems, setCategoryItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [updateStatus, setUpdateStatus] = useState(false);
-  const [categoryType, setCategoryType] = useState("");
-
   const [loaderDelete, setLoaderDelete] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [dataId, setDataId] = useState("");
   const [navigationName, setNavigationName] = useState("");
 
-  useEffect(() => {
-    setCategoryType(convertToSlug(form.category));
-  }, [form.category]);
+  const categoryTypeSlug = form.category
+    .trim()
+    .replace(/\s+/g, "-")
+    .toLowerCase();
 
-  const convertToSlug = (name) => {
-    return name.trim().replace(/\s+/g, "-").toLowerCase();
-  };
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setNavLoading(true);
+        const [navItems, catItems] = await Promise.all([
+          getNavigationItems(),
+          getCategoryCollections(),
+        ]);
+        setNavigationItems(navItems);
+        setCategoryItems(catItems);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setNavLoading(false);
+      }
+    };
+    fetchInitialData();
+  }, []);
+
+  console.log(categoryItems, "categoryItems==<>");
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -49,10 +65,6 @@ const Navigation = () => {
       ...prev,
       [name]: value,
     }));
-
-    if (name === "category") {
-      setCategoryType(convertToSlug(value));
-    }
   };
 
   const handleDeleteClose = () => setShowDelete(false);
@@ -68,10 +80,15 @@ const Navigation = () => {
     e.preventDefault();
     setLoading(true);
 
+    const selectedCategory = categoryItems.find(
+      (item) => item.category_name === form.category
+    );
+
     if (editingId) {
       await updateNavigationItem(editingId, {
         ...form,
-        category_type: categoryType,
+        category_type: categoryTypeSlug,
+        type: selectedCategory?.category_type,
       });
       setEditingId(null);
       setUpdateStatus(false);
@@ -79,26 +96,26 @@ const Navigation = () => {
       await addNavigation({
         nav_name: form.nav_name,
         category: form.category,
-        category_type: categoryType,
+        category_type: categoryTypeSlug,
+        type: selectedCategory?.category_type,
       });
     }
 
     setForm({
       nav_name: "",
       category: "",
-      category_type: "",
     });
+    fetchNavigationItems();
 
     setLoading(false);
     fetchNavigationItems();
   };
 
   const handleUpdate = (item) => {
-    const updatedCategoryType = convertToSlug(item.category);
     setForm({
       nav_name: item.nav_name,
       category: item.category,
-      category_type: updatedCategoryType,
+      category_type: categoryTypeSlug,
     });
     setEditingId(item.id);
     setUpdateStatus(true);
@@ -138,23 +155,6 @@ const Navigation = () => {
       setNavLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchNavigationItems();
-  }, []);
-
-  useEffect(() => {
-    const fetchCategoryItems = async () => {
-      try {
-        const items = await getCategoryCollections();
-        setCategoryItems(items);
-      } catch (error) {
-        console.error("Error fetching category items:", error);
-      }
-    };
-
-    fetchCategoryItems();
-  }, []);
 
   return (
     <>
@@ -211,7 +211,7 @@ const Navigation = () => {
                   label="Category Type"
                   type="text"
                   name="category_type"
-                  value={categoryType}
+                  value={categoryTypeSlug}
                   readOnly
                 />
 
@@ -253,6 +253,11 @@ const Navigation = () => {
                                   {item?.category}
                                 </p>
                               </div>
+                              {item?.type === "Most Popular" && (
+                                <div className="category_type_nav">
+                                  <p>{item?.type}</p>
+                                </div>
+                              )}
                               <div className="menu_action">
                                 <div className="action" onClick={handleReset}>
                                   <LuRefreshCw size={18} strokeWidth="2.5" />

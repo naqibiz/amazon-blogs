@@ -35,31 +35,44 @@ const DataTable = ({ data, columns, rowsPerPage, onEdit, onDelete }) => {
           {currentData.map((item) => (
             <tr key={item.id}>
               {columns.map((column) => (
-                <td
-                  key={column.key}
-                  style={{
-                    width: column.width || "auto",
-                  }}
-                >
-                  {column.key === "action" ? (
-                    <div className="data_table_crud_action">
-                      <button
-                        onClick={() => onEdit(item.id)}
-                        className="edit_action action"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => onDelete(item.id)}
-                        className="delete_action action"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                <React.Fragment key={column.key}>
+                  {column.key === "imageUrls" ? (
+                    <td className="image_url_td">
+                      {item[column.key] && item[column.key][0] && (
+                        <img
+                          src={item[column.key][0]?.url}
+                          alt="Image"
+                          className="feature_image_url"
+                        />
+                      )}
+                    </td>
                   ) : (
-                    item[column.key]
+                    <td
+                      style={{
+                        width: column.width || "auto",
+                      }}
+                    >
+                      {column.key === "action" ? (
+                        <div className="data_table_crud_action">
+                          <button
+                            onClick={() => onEdit(item.id)}
+                            className="edit_action action"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => onDelete(item.id)}
+                            className="delete_action action"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ) : (
+                        item[column.key]
+                      )}
+                    </td>
                   )}
-                </td>
+                </React.Fragment>
               ))}
             </tr>
           ))}

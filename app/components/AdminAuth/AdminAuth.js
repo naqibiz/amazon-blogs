@@ -28,9 +28,14 @@ const AdminAuth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await login({ email: form.email, password: form.password });
-    setLoading(false);
-    router.push("/panel/dashboard");
+    try {
+      await login({ email: form.email, password: form.password });
+      router.push("/panel/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {

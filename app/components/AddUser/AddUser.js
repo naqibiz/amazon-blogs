@@ -37,39 +37,38 @@ const AddUser = ({ setAuthType }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (form.password && form.confirmPassword) {
-      if (
-        !validatePassword(form.password) ||
-        !validatePassword(form.confirmPassword)
-      ) {
-        toast.error(
-          "Password must be 8+ characters with uppercase, lowercase, number, and special character.",
-          toastStyle
-        );
-        return;
-      }
+    if (!validatePassword(form.password)) {
+      toast.error(
+        "Password must be 8+ characters with uppercase, lowercase, number, and special character.",
+        toastStyle
+      );
+      return;
     }
 
     if (form.password !== form.confirmPassword) {
-      toast.error("Password is not match", toastStyle);
+      toast.error("Passwords do not match", toastStyle);
       return;
     }
 
     setLoading(true);
-
-    await register({
-      email: form.email,
-      password: form.password,
-      fullName: form.fullname,
-    });
-    setForm({
-      fullname: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
-    setLoading(false);
-    setAuthType("login");
+    try {
+      await register({
+        email: form.email,
+        password: form.password,
+        fullName: form.fullname,
+      });
+      setForm({
+        fullname: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setAuthType("login");
+    } catch (error) {
+      toast.error("Registration failed. Please try again.", toastStyle);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
