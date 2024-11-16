@@ -268,6 +268,7 @@ body input.form-control:focus {
   border-top-left-radius: 15px;
   text-transform: uppercase;
   color: #fff;
+  user-select: none;
 }
 .category_product_listing .category_listing_loader {
   display: flex;
