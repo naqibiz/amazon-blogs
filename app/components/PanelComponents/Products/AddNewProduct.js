@@ -258,7 +258,7 @@ const AddNewProduct = ({ data }) => {
       // Add new product
       setLoading(true);
       try {
-        await addProduct({
+        const result = await addProduct({
           product_title: form.product_title,
           product_description: form.product_description,
           product_short_description: form.product_short_description,
@@ -274,24 +274,26 @@ const AddNewProduct = ({ data }) => {
           categoryType: categoryType,
         });
 
-        setForm({
-          product_title: "",
-          product_description: "",
-          product_short_description: "",
-          product_price: "",
-          product_url: "",
-          category: "",
-          product_type: "",
-          product_number_sin: "",
-          specifications: [],
-          about_items: [],
-          tags: [],
-        });
-        setUploadedImages([]);
-        setUploadedFiles([]);
-        setTagInput("");
-        setCategoryType("");
-        router.push("/panel/products");
+        if (result.success) {
+          setForm({
+            product_title: "",
+            product_description: "",
+            product_short_description: "",
+            product_price: "",
+            product_url: "",
+            category: "",
+            product_type: "",
+            product_number_sin: "",
+            specifications: [],
+            about_items: [],
+            tags: [],
+          });
+          setUploadedImages([]);
+          setUploadedFiles([]);
+          setTagInput("");
+          setCategoryType("");
+          router.push("/panel/products");
+        }
       } catch (error) {
         console.error("Error submitting product:", error);
       } finally {

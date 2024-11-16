@@ -403,7 +403,7 @@ export async function addProduct(products) {
 
     if (!Array.isArray(feature_images) || feature_images.length === 0) {
       toast.error("No feature images selected.", toastStyle);
-      return;
+      return { success: false };
     }
 
     const productsRef = collection(db, "products");
@@ -414,8 +414,8 @@ export async function addProduct(products) {
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      toast.info("A product with this SIN number already exists.", toastStyle);
-      return;
+      toast.info("This product is already exists.", toastStyle);
+      return { success: false };
     }
 
     const imageUploadPromises = feature_images.map(async (image) => {
@@ -443,7 +443,7 @@ export async function addProduct(products) {
 
     if (imageUrls.length === 0) {
       toast.error("Failed to upload images.", toastStyle);
-      return;
+      return { success: false };
     }
 
     await addDoc(collection(db, "products"), {
@@ -464,9 +464,11 @@ export async function addProduct(products) {
     });
 
     toast.success("Product added successfully", toastStyle);
+    return { success: true };
   } catch (error) {
     console.log("ERROR PRODUCT:", error);
     toast.error(error.message, toastStyle);
+    return { success: false };
   }
 }
 

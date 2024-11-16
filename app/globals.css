@@ -257,6 +257,21 @@ body input.form-control:focus {
   cursor: pointer;
   margin-right: 10px;
   margin-left: 10px;
+  position: relative;
+}
+.category_product_listing .product_detail .caregory_name {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #666666f2;
+  border-top-left-radius: 15px;
+  text-transform: uppercase;
+  color: #fff;
+}
+.category_product_listing .category_listing_loader {
+  display: flex;
+  justify-content: space-between;
 }
 .product_detail_main {
   margin-right: 10px;
@@ -1574,7 +1589,7 @@ textarea {
   width: 78%;
 }
 .data_table_body .image_url_td {
-  width: 175px;
+  width: 135px;
 }
 .product_data_table tr td,
 .category_data_table tr td {

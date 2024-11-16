@@ -71,7 +71,7 @@ const ProductList = () => {
 
   const columns = [
     { key: "imageUrls", label: "Product Image" },
-    { key: "product_title", label: "Product Name" },
+    { key: "product_title", label: "Product Name", width: "250px" },
     { key: "category", label: "Category" },
     { key: "product_price", label: "Price" },
     { key: "product_type", label: "Product Type" },
