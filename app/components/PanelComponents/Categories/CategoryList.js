@@ -22,8 +22,6 @@ const CategoryList = () => {
   const router = useRouter();
   const [isFetched, setIsFetched] = useState(false);
 
-  console.log(categoryItems, "categoryItems===<>");
-
   useEffect(() => {
     const fetchCategoryItems = async () => {
       try {

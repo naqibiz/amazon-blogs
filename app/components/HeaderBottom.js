@@ -3,7 +3,6 @@ import SkeletonLoader from "./SkeletonLoader/SkeletonLoader";
 import Link from "next/link";
 
 const HeaderBottom = ({ navigationItems, loading }) => {
-  console.log(navigationItems, "navigationItemsnavigationItems");
   return (
     <div className="navigation_items">
       <nav>

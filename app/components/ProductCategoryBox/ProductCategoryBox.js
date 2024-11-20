@@ -3,8 +3,7 @@ import Link from "next/link";
 import React from "react";
 import { BsCurrencyDollar } from "react-icons/bs";
 
-const ProductCategoryBox = ({ data, typeStatus }) => {
-  console.log(data, "data==<>ProductCategoryBox");
+const ProductCategoryBox = ({ data }) => {
   return (
     <div className="latest_product_grid">
       <Link

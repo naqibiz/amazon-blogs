@@ -19,8 +19,6 @@ const ProductList = () => {
   const [productName, setProductName] = useState("");
   const router = useRouter();
 
-  console.log(productItems, "productItems---new");
-
   useEffect(() => {
     const fetchProductItems = async () => {
       try {
@@ -52,8 +50,6 @@ const ProductList = () => {
     setProductName(selectedProduct?.product_title || "");
     setShowDelete(true);
   };
-
-  console.log(dataId, "dataId----<>");
 
   const confirmDelete = async () => {
     try {
