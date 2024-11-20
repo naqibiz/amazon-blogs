@@ -12,6 +12,7 @@ import AllCategoryDrawer from "./AllCategoryDrawer/AllCategoryDrawer";
 
 const Header = () => {
   const [navigationItems, setNavigationItems] = useState([]);
+  const [navigationMostPopular, setNavigationMostPopular] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isFetched, setIsFetched] = useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
@@ -22,7 +23,9 @@ const Header = () => {
     setLoading(true);
     try {
       const items = await getNavigationItems();
+      const mostPopular = items?.filter((val) => val?.type === "Most Popular");
       setNavigationItems(items);
+      setNavigationMostPopular(mostPopular);
     } catch (error) {
       console.error("Error fetching navigation items:", error);
     } finally {
@@ -73,7 +76,7 @@ const Header = () => {
                   </div>
                   <Container>
                     <HeaderBottom
-                      navigationItems={navigationItems}
+                      navigationItems={navigationMostPopular}
                       loading={loading}
                     />
                   </Container>

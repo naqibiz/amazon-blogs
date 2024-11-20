@@ -6,23 +6,29 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { BsCurrencyDollar, BsFillInfoCircleFill } from "react-icons/bs";
+import ProductCategoryBox from "../ProductCategoryBox/ProductCategoryBox";
+import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
 
 const ProductsCategory = ({ data }) => {
+  console.log(data, "data==<>");
   const router = useRouter();
   const [productItems, setProductItems] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
-  const [loader, setLoader] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProductItems = async () => {
       try {
-        setLoader(true);
+        setLoading(true);
         const items = await getProducts();
-        setProductItems(items);
+        const categoryTypeData = items?.filter(
+          (val) => val?.categoryType === data?.category
+        );
+        setProductItems(categoryTypeData);
       } catch (error) {
         console.error("Error fetching product items:", error);
       } finally {
-        setLoader(false);
+        setLoading(false);
         setIsFetched(true);
       }
     };
@@ -32,11 +38,7 @@ const ProductsCategory = ({ data }) => {
     }
   }, [isFetched, data]);
 
-  const filteredProducts = productItems?.filter(
-    (product) => product?.categoryType === data?.category
-  );
-
-  console.log(filteredProducts, "filteredProductsfilteredProducts");
+  console.log(productItems, "productItems==<>");
 
   const categoryList = [
     {
@@ -126,33 +128,20 @@ const ProductsCategory = ({ data }) => {
       <Container>
         <div className="latest_products_inner">
           <Row>
-            {categoryList?.map((val, i) => (
-              <Col lg={3} md={4} key={i}>
-                <div className="latest_product_grid">
-                  <Link href={`/single-product?id=${val?.id}`}>
-                    <div className="product_image">
-                      <img src={val?.productImage} alt="" />
+            {loading
+              ? [1, 2, 3, 4].map((val) => (
+                  <Col lg={3} key={val}>
+                    <SkeletonLoader height={170} />
+                    <div className="content_loader">
+                      <SkeletonLoader height={260} />
                     </div>
-                    <div className="product-content">
-                      <p className="sponsored">
-                        Sponsored <BsFillInfoCircleFill />
-                      </p>
-                      <p className="product-title">{val?.description}</p>
-                      <p className="product-description">{val?.description}</p>
-                      <div className="product_price_main">
-                        <p className="product-price">
-                          <sup>
-                            <BsCurrencyDollar />
-                          </sup>
-                          {val?.price}
-                        </p>
-                        <del>$ 19.99</del>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              </Col>
-            ))}
+                  </Col>
+                ))
+              : productItems.map((val, i) => (
+                  <Col lg={3} key={i}>
+                    <ProductCategoryBox data={val} />
+                  </Col>
+                ))}
           </Row>
         </div>
       </Container>

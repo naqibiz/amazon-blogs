@@ -56,7 +56,7 @@ const CategoryListings = () => {
       {loading ? (
         <div className="category_listing_loader">
           {[1, 2, 3, 4]?.map((val, i) => (
-            <SkeletonLoader height={250} width={290} />
+            <SkeletonLoader height={250} width={290} key={i} />
           ))}
         </div>
       ) : (
@@ -65,14 +65,24 @@ const CategoryListings = () => {
             <div className="embla__container">
               {categoryItems?.map((val, index) => (
                 <div className="embla__slide" key={index}>
-                  <div
-                    className="product_detail embla__slide__img"
-                    style={{
-                      backgroundImage: `url(${val?.imageUrls[0]?.url})`,
+                  <Link
+                    href={{
+                      pathname: "/product-category",
+                      query: {
+                        category: val?.category_slug,
+                        name: val?.category_name,
+                      },
                     }}
                   >
-                    <div className="caregory_name">{val?.category_name}</div>
-                  </div>
+                    <div
+                      className="product_detail embla__slide__img"
+                      style={{
+                        backgroundImage: `url(${val?.imageUrls[0]?.url})`,
+                      }}
+                    >
+                      <div className="caregory_name">{val?.category_name}</div>
+                    </div>
+                  </Link>
                 </div>
               ))}
             </div>
