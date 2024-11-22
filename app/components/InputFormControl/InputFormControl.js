@@ -16,7 +16,7 @@ const InputFormControl = forwardRef(function InputFormControl(
     value,
     onChange,
     disabled,
-    maxlength,
+    maxLength,
     readOnly,
     className,
     label,
@@ -42,7 +42,7 @@ const InputFormControl = forwardRef(function InputFormControl(
           ref={ref}
           disabled={disabled}
           value={value}
-          maxlength={maxlength}
+          maxLength={maxLength}
           onChange={onChange}
           className={`${className} input-form-control`}
         />

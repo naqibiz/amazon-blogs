@@ -36,6 +36,9 @@
     "redux-persist": "^6.0.0",
     "uuid": "^11.0.2"
   },
+  "overrides": {
+    "undici": "5.28.4"
+  },
   "devDependencies": {
     "eslint": "^8",
     "eslint-config-next": "14.1.4"
