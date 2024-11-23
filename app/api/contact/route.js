@@ -13,8 +13,8 @@ export const POST = async (request) => {
   });
 
   const mailOptions = {
-    from: "naqighabrani@gmail.com",
-    to: email,
+    from: email,
+    to: "naqighabrani@gmail.com",
     subject: "New Contact Form Submission",
     text: message,
     html: `<h1>Contact Form Submission</h1><p>${message} ${email}</p>`,
