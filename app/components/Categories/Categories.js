@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import LatestProducts from "../LatestProducts/LatestProducts";
 import { Col, Container, Row } from "react-bootstrap";
@@ -6,7 +7,6 @@ import Link from "next/link";
 import { BsCurrencyDollar, BsFillInfoCircleFill } from "react-icons/bs";
 
 const Categories = () => {
-  const router = useRouter();
   const categoryList = [
     {
       id: 1,
