@@ -10,8 +10,6 @@ import ProductCategoryBox from "../ProductCategoryBox/ProductCategoryBox";
 import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
 
 const ProductsCategory = ({ data }) => {
-  console.log(data, "data==<>");
-  const router = useRouter();
   const [productItems, setProductItems] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
   const [loading, setLoading] = useState(true);
