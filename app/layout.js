@@ -12,6 +12,9 @@ const rubik = Rubik({ subsets: ["latin"] });
 export const metadata = {
   title: "itemzfinder",
   description: "A blog showcasing and promoting various products",
+  icons: {
+    icon: "/assets/images/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }) {
