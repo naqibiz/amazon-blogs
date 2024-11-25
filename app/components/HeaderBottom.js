@@ -16,7 +16,6 @@ const HeaderBottom = ({ navigationItems, loading }) => {
           ) : navigationItems.length > 0 ? (
             navigationItems.map((nav, i) => (
               <>
-                {console.log(nav, "navnav")}
                 <li key={i}>
                   <Link
                     href={{
