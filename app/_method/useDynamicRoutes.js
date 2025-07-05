@@ -2,11 +2,11 @@
 import React from "react";
 import { RxDashboard } from "react-icons/rx";
 import { MdAltRoute } from "react-icons/md";
-import { BsFillMenuButtonWideFill } from "react-icons/bs";
 import { MdOutlineCategory } from "react-icons/md";
 import { MdProductionQuantityLimits } from "react-icons/md";
 import { MdOutlineContacts } from "react-icons/md";
 import { MdOutlineSubscriptions } from "react-icons/md";
+import { IoSettingsOutline } from "react-icons/io5";
 
 export default function useDynamicRoutes(pathname) {
   const sidebarNavigation = [
@@ -36,9 +36,9 @@ export default function useDynamicRoutes(pathname) {
     },
     {
       id: 5,
-      name: "Footer Menu",
-      route: "/panel/footer-menu",
-      icon: <BsFillMenuButtonWideFill color="#fff" size={18} />,
+      name: "Banner Setting",
+      route: "/panel/banner-setting",
+      icon: <IoSettingsOutline color="#fff" size={19} />,
     },
     {
       id: 6,

@@ -3,7 +3,14 @@ import React, { useEffect, useState } from "react";
 import { Table } from "react-bootstrap";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from "react-icons/hi";
 
-const DataTable = ({ data, columns, rowsPerPage, onEdit, onDelete }) => {
+const DataTable = ({
+  data,
+  columns,
+  rowsPerPage,
+  onEdit,
+  onDelete,
+  onValidity,
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -65,6 +72,19 @@ const DataTable = ({ data, columns, rowsPerPage, onEdit, onDelete }) => {
                             className="delete_action action"
                           >
                             Delete
+                          </button>
+                        </div>
+                      ) : column.key === "validity" ? (
+                        <div className="data_table_crud_action">
+                          <button
+                            onClick={() => onValidity(item.id)}
+                            className={`${
+                              item[column.key] == "Active"
+                                ? "validity_active"
+                                : "validity_inactive"
+                            } action`}
+                          >
+                            {item[column.key]}
                           </button>
                         </div>
                       ) : (

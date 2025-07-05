@@ -1,6 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { getSubscription } from "@/app/database/firebaseConfig";
+import {
+  getSubscription,
+  updateSubscription,
+} from "@/app/database/firebaseConfig";
 import PanelHead from "../PanelHead/PanelHead";
 import DataTable from "../DataTable/DataTable";
 import PageLoader from "../PageLoader/PageLoader";
@@ -36,12 +39,32 @@ const Subscriptions = () => {
     { key: "email", label: "Email", width: "300px" },
     { key: "status", label: "Status" },
     { key: "createdAt", label: "Date" },
+    { key: "validity", label: "Validity" },
   ];
 
   const formattedsubscriptions = subscriptions.map((item) => ({
     ...item,
     createdAt: item.createdAt ? new Date(item.createdAt).toDateString() : "N/A",
   }));
+
+  const handleValidityToggle = async (id) => {
+    const selectedItem = subscriptions.find((item) => item.id === id);
+    if (!selectedItem) return;
+
+    const newValidity =
+      selectedItem.validity === "Active" ? "InActive" : "Active";
+
+    try {
+      await updateSubscription(id, { validity: newValidity });
+
+      const updatedList = subscriptions.map((item) =>
+        item.id === id ? { ...item, validity: newValidity } : item
+      );
+      setSubscription(updatedList);
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+    }
+  };
 
   return (
     <>
@@ -58,6 +81,7 @@ const Subscriptions = () => {
               data={formattedsubscriptions}
               columns={columns}
               rowsPerPage={10}
+              onValidity={handleValidityToggle}
             />
           )}
         </div>

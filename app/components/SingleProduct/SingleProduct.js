@@ -13,6 +13,7 @@ import ProductCategoryBox from "../ProductCategoryBox/ProductCategoryBox";
 import { getProducts } from "@/app/database/firebaseConfig";
 import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
 import PageLoader from "../PageLoader/PageLoader";
+import logo from "/public/assets/images/qr-code.svg";
 
 const SingleProductDetail = ({ data }) => {
   const [productItems, setProductItems] = useState([]);
@@ -41,10 +42,13 @@ const SingleProductDetail = ({ data }) => {
       }
     };
 
-    if (!isFetched) {
+    // if (!isFetched) {
+    //   fetchProductItems();
+    // }
+    if (data?.id && data?.type) {
       fetchProductItems();
     }
-  }, [isFetched]);
+  }, [data]);
 
   const ProductData = productItems?.find((val) => val?.id === data?.id);
 
@@ -220,14 +224,6 @@ const SingleProductDetail = ({ data }) => {
                         fgColor="#000000"
                         level="Q"
                         includeMargin={true}
-                        imageSettings={{
-                          src: "/assets/images/qr-code.svg",
-                          x: null,
-                          y: null,
-                          height: 140,
-                          width: 140,
-                          excavate: true,
-                        }}
                       />
                     </div>
                   </div>

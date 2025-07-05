@@ -10,6 +10,7 @@ import {
   addProduct,
   getCategoryCollections,
   getProducts,
+  getSubscription,
   updateProduct,
 } from "@/app/database/firebaseConfig";
 import Dropdown from "../../Dropdown/Dropdown";
@@ -17,6 +18,7 @@ import { productType, toastStyle } from "@/app/_method/utils";
 import Button from "../../Button/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const AddNewProduct = ({ data }) => {
   console.log(data?.id, "data id product");
@@ -40,6 +42,7 @@ const AddNewProduct = ({ data }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [removedImagesPaths, setRemovedImagesPaths] = useState([]);
   const [categoryItems, setCategoryItems] = useState([]);
+  const [subscriptions, setSubscription] = useState([]);
   const [categoryType, setCategoryType] = useState("");
   const [productItems, setProductItems] = useState([]);
   const [updateStatus, setUpdateStatus] = useState(false);
@@ -90,17 +93,31 @@ const AddNewProduct = ({ data }) => {
   };
 
   useEffect(() => {
-    const fetchCategoryItems = async () => {
+    const fetchData = async () => {
       try {
-        const items = await getCategoryCollections();
-        setCategoryItems(items);
+        const [categoryItems, subscriptionItems] = await Promise.all([
+          getCategoryCollections(),
+          getSubscription(),
+        ]);
+
+        const activeSubscriptions = subscriptionItems.filter(
+          (item) => item.validity === "Active"
+        );
+
+        setCategoryItems(categoryItems);
+        setSubscription(activeSubscriptions);
       } catch (error) {
-        console.error("Error fetching category items:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchCategoryItems();
+    fetchData();
   }, []);
+
+  console.log(
+    subscriptions?.map((val) => val?.email),
+    "subscriptions---"
+  );
 
   // add Specification
   const addSpecification = () => {
@@ -275,6 +292,20 @@ const AddNewProduct = ({ data }) => {
         });
 
         if (result.success) {
+          const emailsToSend = subscriptions
+            .map((val) => val?.email)
+            .filter(Boolean);
+          try {
+            await axios.post("/api/send-product-email", {
+              emails: emailsToSend,
+              productTitle: form.product_title,
+              productDescription: form.product_description,
+            });
+            console.log("Emails sent successfully!");
+          } catch (err) {
+            console.error("Failed to send email to subscribers:", err);
+          }
+
           setForm({
             product_title: "",
             product_description: "",

@@ -11,8 +11,10 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { getCategoryCollections } from "@/app/database/firebaseConfig";
 import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
+import { useRouter } from "next/navigation";
 
 const CategoryListings = () => {
+  const router = useRouter();
   const options = { loop: true };
   const [categoryItems, setCategoryItems] = useState([]);
   const [isFetched, setIsFetched] = useState(false);
@@ -65,24 +67,19 @@ const CategoryListings = () => {
             <div className="embla__container">
               {categoryItems?.map((val, index) => (
                 <div className="embla__slide" key={index}>
-                  <Link
-                    href={{
-                      pathname: "/product-category",
-                      query: {
-                        category: val?.category_slug,
-                        name: val?.category_name,
-                      },
+                  <div
+                    className="product_detail embla__slide__img"
+                    style={{
+                      backgroundImage: `url(${val?.imageUrls[0]?.url})`,
                     }}
+                    onClick={() =>
+                      router.push(
+                        `/product-category?category=${val?.category_slug}&name=${val?.category_name}`
+                      )
+                    }
                   >
-                    <div
-                      className="product_detail embla__slide__img"
-                      style={{
-                        backgroundImage: `url(${val?.imageUrls[0]?.url})`,
-                      }}
-                    >
-                      <div className="caregory_name">{val?.category_name}</div>
-                    </div>
-                  </Link>
+                    <div className="caregory_name">{val?.category_name}</div>
+                  </div>
                 </div>
               ))}
             </div>

@@ -38,6 +38,7 @@ const Subscribe = () => {
     try {
       await addSubscription({
         email: form.email,
+        validity: "Active",
       });
       setForm({
         email: "",

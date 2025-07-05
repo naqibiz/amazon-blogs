@@ -45,7 +45,6 @@ const ContactUs = () => {
     setLoading(true);
 
     try {
-      // Step 1: Attempt to send data to the API
       const response = await axios.post("/api/contact", {
         email: form.email,
         message: form.message,

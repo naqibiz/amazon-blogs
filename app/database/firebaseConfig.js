@@ -336,7 +336,7 @@ export async function getContactUs() {
 // ADD SUBSCRIPTION COLLECTION
 export async function addSubscription(subscriptionInfo) {
   try {
-    const { email, status } = subscriptionInfo;
+    const { email, status, validity } = subscriptionInfo;
 
     const q = query(
       collection(db, "subscription"),
@@ -352,6 +352,7 @@ export async function addSubscription(subscriptionInfo) {
     await addDoc(collection(db, "subscription"), {
       email,
       status: "Subscribed",
+      validity,
       createdAt: Timestamp.now(),
     });
 
@@ -362,6 +363,17 @@ export async function addSubscription(subscriptionInfo) {
   } catch (error) {
     console.log("ERROR SUBSCRIPTION:", error);
     toast.error(`Failed to add subscription: ${error.message}`, toastStyle);
+  }
+}
+
+// UPDATE SUBSCRIPTION COLLECTION
+export async function updateSubscription(id, updatedData) {
+  try {
+    const subscriptionDoc = doc(db, "subscription", id);
+    await updateDoc(subscriptionDoc, updatedData);
+    toast.success("subscription updated successfully", toastStyle);
+  } catch (error) {
+    toast.error(error.message, toastStyle);
   }
 }
 
@@ -563,6 +575,129 @@ export async function deleteProduct(id) {
   } catch (error) {
     console.error("Error deleting product:", error);
     toast.error(error.message, toastStyle);
+  }
+}
+
+// ADD BANNERSETTING COLLECTION
+export async function addBannerSetting(bannerSetting) {
+  try {
+    const { feature_images = [] } = bannerSetting;
+
+    if (!Array.isArray(feature_images) || feature_images.length === 0) {
+      toast.error("No feature images selected.", toastStyle);
+      return { success: false };
+    }
+
+    const bannerSettingRef = collection(db, "bannerSetting");
+    const bannerSettingSnapshot = await getDocs(bannerSettingRef);
+    let existingDoc = bannerSettingSnapshot.docs[0];
+
+    let existingImages = existingDoc ? existingDoc.data().imageUrls || [] : [];
+
+    const imageUploadPromises = feature_images.map(async (image) => {
+      if (image && image.name) {
+        try {
+          const uniqueId = uuidv4();
+          const newImageName = `${uniqueId}-${image.name}`;
+          const storageRef = ref(storage, `bannersetting/${newImageName}`);
+          await uploadBytes(storageRef, image);
+          const url = await getDownloadURL(storageRef);
+
+          return { url, path: storageRef.fullPath };
+        } catch (err) {
+          console.error("Failed to upload image:", image.name, err);
+          return null;
+        }
+      } else {
+        console.error("Invalid image:", image);
+        return null;
+      }
+    });
+
+    const imageUrls = (await Promise.all(imageUploadPromises)).filter(Boolean);
+
+    if (imageUrls.length === 0) {
+      toast.error("Failed to upload images.", toastStyle);
+      return { success: false };
+    }
+
+    const updatedImages = [...existingImages, ...imageUrls];
+
+    if (existingDoc) {
+      await updateDoc(doc(db, "bannerSetting", existingDoc.id), {
+        imageUrls: updatedImages,
+        updatedAt: Timestamp.now(),
+      });
+    } else {
+      await addDoc(bannerSettingRef, {
+        imageUrls: updatedImages,
+        createdAt: Timestamp.now(),
+      });
+    }
+
+    toast.success("Banner image uploaded successfully", toastStyle);
+    return { success: true };
+  } catch (error) {
+    console.log("ERROR PRODUCT:", error);
+    toast.error(error.message, toastStyle);
+    return { success: false };
+  }
+}
+
+// DELETE BANNERSETTING IMAGE
+export async function deleteBannerSettingImage(imagePath) {
+  try {
+    if (!imagePath) {
+      toast.error("Invalid image path.", toastStyle);
+      return { success: false };
+    }
+
+    const bannerSettingRef = collection(db, "bannerSetting");
+    const bannerSettingSnapshot = await getDocs(bannerSettingRef);
+    let existingDoc = bannerSettingSnapshot.docs[0];
+
+    if (!existingDoc) {
+      toast.error("No document found to delete images from.", toastStyle);
+      return { success: false };
+    }
+
+    let existingImages = existingDoc.data().imageUrls || [];
+
+    const updatedImages = existingImages.filter(
+      (img) => img.path !== imagePath
+    );
+
+    const imageRef = ref(storage, imagePath);
+    await deleteObject(imageRef);
+
+    await updateDoc(doc(db, "bannerSetting", existingDoc.id), {
+      imageUrls: updatedImages,
+      updatedAt: Timestamp.now(),
+    });
+
+    toast.success("Image deleted successfully.", toastStyle);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    toast.error(error.message, toastStyle);
+    return { success: false };
+  }
+}
+
+// GET BANNERSETTING COLLECTION
+export async function getBannerSetting() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "bannerSetting"));
+    const bannerSettingItems = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt ? doc.data().createdAt.toDate() : null,
+    }));
+    return bannerSettingItems;
+  } catch (error) {
+    console.error("Error fetching bannerSetting items:", error);
+    toast.error("Failed to fetch bannerSetting items", toastStyle);
+    return [];
   }
 }
 

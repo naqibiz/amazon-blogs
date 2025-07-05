@@ -11,12 +11,15 @@ import { auth } from "../database/firebaseConfig";
 import { toast } from "react-toastify";
 import { toastStyle } from "../_method/utils";
 import useAuthRedirect from "./useAuthRedirect/useAuthRedirect";
+import SearchProducts from "./SearchProducts";
 
 const HeaderTop = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser } = useAuthRedirect();
   const panelRoute = pathname?.slice(0, 6) == "/panel";
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleLogout = async () => {
     try {
@@ -38,18 +41,31 @@ const HeaderTop = () => {
       </div>
       {pathname == "/admin-panel-auth" || panelRoute ? null : (
         <div className="search-blog">
-          <Form>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <LuSearch color="#f3971b" size={25} className="search_icon" />
             <input
               className="form-control"
               placeholder="Find what you're looking for..."
               required
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               type="text"
               aria-label="Search Blogs"
             />
-            <button className="search_blog_btn">
+            {/* <button className="search_blog_btn">
               <LuSearch color="#fff" size={25} />
-            </button>
+            </button> */}
           </Form>
+          {searchTerm.length > 2 && (
+            <SearchProducts
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+          )}
         </div>
       )}
       <div className="header_right_section">

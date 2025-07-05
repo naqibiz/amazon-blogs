@@ -19,22 +19,22 @@ const ProductsCategory = ({ data }) => {
       try {
         setLoading(true);
         const items = await getProducts();
-        const categoryTypeData = items?.filter(
+        const filtered = items?.filter(
           (val) => val?.categoryType === data?.category
         );
-        setProductItems(categoryTypeData);
+        setProductItems(filtered);
       } catch (error) {
         console.error("Error fetching product items:", error);
+        setProductItems([]);
       } finally {
         setLoading(false);
-        setIsFetched(true);
       }
     };
 
-    if (!isFetched) {
+    if (data?.category) {
       fetchProductItems();
     }
-  }, [isFetched, data]);
+  }, [data?.category]);
 
   return (
     <div className="latest_product_listing category_product_listing">
