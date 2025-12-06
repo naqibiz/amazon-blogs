@@ -93,27 +93,27 @@ export const POST = async (request) => {
         </p>
       </div>
 
-      <div style="text-align: center; margin-top: 40px">
-        <a
-          href="#"
-          style="
-            display: inline-block;
-            background-color: #f3971b;
-            color: #ffffff;
-            padding: 18px 40px;
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-          "
-        >
-          View Product
-        </a>
-      </div>
+      // <div style="text-align: center; margin-top: 40px">
+      //   <a
+      //     href="#"
+      //     style="
+      //       display: inline-block;
+      //       background-color: #f3971b;
+      //       color: #ffffff;
+      //       padding: 18px 40px;
+      //       text-decoration: none;
+      //       border-radius: 10px;
+      //       font-size: 18px;
+      //       font-weight: bold;
+      //       text-transform: uppercase;
+      //       letter-spacing: 1px;
+      //       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      //       transition: all 0.3s ease;
+      //     "
+      //   >
+      //     View Product
+      //   </a>
+      // </div>
 
             <div
         style="padding: 30px; margin: 40px 0 0 0; border-top: 1px solid #eeeeee"

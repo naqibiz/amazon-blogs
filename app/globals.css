@@ -1931,6 +1931,9 @@ textarea {
 .search_products_grid .row_product:hover {
   background-color: #ebeaea;
 }
+.cms_panle_auth_wrapper form .input-form-group:nth-child(2) {
+  margin-bottom: 15px;
+}
 
 /* responsive start */
 @media screen and (max-width: 767px) and (min-width: 200px) {

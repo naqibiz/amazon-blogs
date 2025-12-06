@@ -5,6 +5,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   updateProfile,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import {
   addDoc,
@@ -43,6 +44,20 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+// RESET PASSWORD
+export async function resetPassword(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    toast.success(
+      "Password reset link has been sent to your email.",
+      toastStyle
+    );
+  } catch (error) {
+    console.log("RESET ERROR:", error);
+    toast.error(error.message, toastStyle);
+  }
+}
 
 // SIGNUP USER
 export async function register(userInfo) {

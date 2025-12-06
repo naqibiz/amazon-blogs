@@ -6,7 +6,7 @@ import InputFormControl from "../InputFormControl/InputFormControl";
 import Button from "../Button/Button";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
-import { login } from "@/app/database/firebaseConfig";
+import { login, resetPassword } from "@/app/database/firebaseConfig";
 
 const AdminAuth = () => {
   const router = useRouter();
@@ -16,6 +16,7 @@ const AdminAuth = () => {
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +36,23 @@ const AdminAuth = () => {
       console.error("Login error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!form.email) {
+      toast.error("Please enter your email first.");
+      return;
+    }
+
+    setResetLoading(true);
+
+    try {
+      await resetPassword(form.email);
+    } catch (error) {
+      console.error("Reset Password Error:", error);
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -63,6 +81,21 @@ const AdminAuth = () => {
           icon={passwordVisible ? <FaEye /> : <FaEyeSlash />}
           onClickIcon={togglePasswordVisibility}
         />
+
+        <p
+          onClick={!resetLoading ? handleForgotPassword : null}
+          style={{
+            cursor: resetLoading ? "not-allowed" : "pointer",
+            color: "#f3971b",
+            fontSize: "14px",
+            marginBottom: "20px",
+            marginTop: "-5px",
+            textAlign: "right",
+            opacity: resetLoading ? 0.6 : 1,
+          }}
+        >
+          {resetLoading ? "Sending reset email..." : "Forgot Password?"}
+        </p>
 
         <Button btnTitle={`Login User`} type="submit" isLoading={loading} />
       </Form>

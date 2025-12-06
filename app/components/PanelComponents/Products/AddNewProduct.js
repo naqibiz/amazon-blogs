@@ -367,7 +367,12 @@ const AddNewProduct = ({ data }) => {
 
   return (
     <div>
-      <PanelHead tittle="Products" btnTitle="Add New Product" />
+      {updateStatus ? (
+        <PanelHead tittle="Products" />
+      ) : (
+        <PanelHead tittle="Products" btnTitle="Add New Product" />
+      )}
+
       <div className="add_new_product">
         <Form onSubmit={handleSubmit}>
           <Row>
