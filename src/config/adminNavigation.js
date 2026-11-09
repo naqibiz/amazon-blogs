@@ -1,6 +1,12 @@
 import React from "react";
 import { RxDashboard } from "react-icons/rx";
-import { MdAltRoute, MdOutlineCategory, MdProductionQuantityLimits, MdOutlineContacts, MdOutlineSubscriptions } from "react-icons/md";
+import {
+  MdAltRoute,
+  MdOutlineCategory,
+  MdProductionQuantityLimits,
+  MdOutlineContacts,
+  MdOutlineSubscriptions,
+} from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 
 export const adminSidebarNavigation = [
@@ -49,6 +55,5 @@ export const adminSidebarNavigation = [
 ];
 
 export default function useDynamicRoutes() {
-  return adminSidebarNavigation;
+  return [adminSidebarNavigation];
 }
-

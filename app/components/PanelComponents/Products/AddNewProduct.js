@@ -1,11 +1,22 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import PanelHead from "../../PanelHead/PanelHead";
 import { Col, Form, Row } from "react-bootstrap";
 import InputFormControl from "../../InputFormControl/InputFormControl";
 import { FaPlus, FaRegTrashCan, FaTrashCan } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 import { MdOutlineCloudUpload } from "react-icons/md";
+import {
+  FiShoppingBag,
+  FiFileText,
+  FiDollarSign,
+  FiLayers,
+  FiList,
+  FiImage,
+  FiTag,
+  FiArrowLeft,
+  FiCheck,
+} from "react-icons/fi";
 import {
   addProduct,
   getCategoryCollections,
@@ -19,9 +30,13 @@ import Button from "../../Button/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useAppDispatch } from "@/src/store/hooks";
+import { fetchProducts } from "@/src/store/slices/productSlice";
+import { invalidateDashboardCache } from "@/src/store/slices/dashboardSlice";
+import Link from "next/link";
 
 const AddNewProduct = ({ data }) => {
-  console.log(data?.id, "data id product");
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState({
     product_title: "",
     product_description: "",
@@ -49,19 +64,17 @@ const AddNewProduct = ({ data }) => {
   const [loading, setLoading] = useState(false);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
 
-  console.log(uploadedFiles, "uploadedFilesuploadedFiles");
-
   const predefinedLabels = [
-    "Compatible Mountings",
-    "Aspect Ratio",
-    "Photo Sensor Technology",
-    "Supported File Format",
-    "Image Stabilization",
-    "Maximum Focal Length",
-    "Optical Zoom",
-    "Maximum Aperture",
-    "Expanded ISO Minimum",
     "Brand",
+    "Model Name",
+    "Color",
+    "Screen Size",
+    "Connectivity",
+    "Optical Zoom",
+    "Supported File Format",
+    "Photo Sensor Technology",
+    "Compatible Mountings",
+    "Image Stabilization",
   ];
 
   const handleFormChange = (e) => {
@@ -92,92 +105,67 @@ const AddNewProduct = ({ data }) => {
     }
   };
 
+  // Initial data load
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoryItems, subscriptionItems] = await Promise.all([
+        const [categoriesRes, subsRes, prodsRes] = await Promise.all([
           getCategoryCollections(),
           getSubscription(),
+          getProducts(),
         ]);
-
-        const activeSubscriptions = subscriptionItems.filter(
-          (item) => item.validity === "Active"
-        );
-
-        setCategoryItems(categoryItems);
-        setSubscription(activeSubscriptions);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        setCategoryItems(categoriesRes || []);
+        setSubscription(subsRes || []);
+        setProductItems(prodsRes || []);
+      } catch (err) {
+        console.error("Error loading product dependencies:", err);
       }
     };
-
     fetchData();
   }, []);
 
-  console.log(
-    subscriptions?.map((val) => val?.email),
-    "subscriptions---"
-  );
+  // Hydrate edit product
+  useEffect(() => {
+    if (!data?.id || productItems.length === 0) return;
 
-  // add Specification
-  const addSpecification = () => {
-    const nextIndex = form.specifications.length;
+    const currentProd = productItems.find((p) => p.id === data.id);
+    if (currentProd) {
+      setForm({
+        product_title: currentProd.product_title || "",
+        product_description: currentProd.product_description || "",
+        product_short_description: currentProd.product_short_description || "",
+        product_price: currentProd.product_price || "",
+        product_url: currentProd.product_url || "",
+        category: currentProd.category || "",
+        product_type: currentProd.product_type || "",
+        product_number_sin: currentProd.product_number_sin || "",
+        specifications: currentProd.specifications || [],
+        about_items: currentProd.about_items || [],
+        tags: currentProd.tags || [],
+      });
+      setCategoryType(currentProd.categoryType || "");
+      setUploadedFiles(currentProd.imageUrls || []);
+      setUploadedImages(currentProd.imageUrls || []);
+      setUpdateStatus(true);
+    }
+  }, [productItems, data?.id]);
 
-    if (nextIndex < predefinedLabels.length) {
-      setForm((prev) => ({
-        ...prev,
-        specifications: [
-          ...prev.specifications,
-          { label: predefinedLabels[nextIndex], value: "" },
-        ],
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        specifications: [...prev.specifications, { label: "", value: "" }],
-      }));
+  // Tag management
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag();
     }
   };
 
-  // remove Specification
-  const removeSpecification = (index) => {
-    const updatedSpecifications = form.specifications.filter(
-      (spec, i) => i !== index
-    );
-    setForm((prev) => ({
-      ...prev,
-      specifications: updatedSpecifications,
-    }));
-  };
-
-  // add AboutItem
-  const addAboutItem = () => {
-    setForm((prev) => ({
-      ...prev,
-      about_items: [...prev.about_items, ""],
-    }));
-  };
-
-  // remove AboutItem
-  const removeAboutItem = (index) => {
-    const updatedAboutItems = form.about_items.filter((_, i) => i !== index);
-    setForm((prev) => ({
-      ...prev,
-      about_items: updatedAboutItems,
-    }));
-  };
-
-  // Add tag on 'Enter' key press
-  const handleTagInputKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (tagInput.trim() !== "") {
-        setForm((prev) => ({
-          ...prev,
-          tags: [...prev.tags, tagInput.trim()],
-        }));
-        setTagInput("");
-      }
+  const addTag = () => {
+    const trimmed = tagInput.trim().replace(/^,+|,+$/g, "");
+    if (trimmed && !form.tags.includes(trimmed)) {
+      setForm((prev) => ({
+        ...prev,
+        tags: [...prev.tags, trimmed],
+      }));
+      setTagInput("");
     }
   };
 
@@ -188,8 +176,42 @@ const AddNewProduct = ({ data }) => {
     }));
   };
 
+  // Specifications management
+  const addSpecification = (predefinedLabel = "") => {
+    setForm((prev) => ({
+      ...prev,
+      specifications: [
+        ...prev.specifications,
+        { label: typeof predefinedLabel === "string" ? predefinedLabel : "", value: "" },
+      ],
+    }));
+  };
+
+  const removeSpecification = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      specifications: prev.specifications.filter((_, i) => i !== index),
+    }));
+  };
+
+  // About items management
+  const addAboutItem = () => {
+    setForm((prev) => ({
+      ...prev,
+      about_items: [...prev.about_items, ""],
+    }));
+  };
+
+  const removeAboutItem = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      about_items: prev.about_items.filter((_, i) => i !== index),
+    }));
+  };
+
+  // File uploads
   const handleFileUploadClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e) => {
@@ -215,23 +237,11 @@ const AddNewProduct = ({ data }) => {
     }
   };
 
-  useEffect(() => {
-    const fetchProductItems = async () => {
-      try {
-        const items = await getProducts();
-        setProductItems(items);
-      } catch (error) {
-        console.error("Error fetching product items:", error);
-      }
-    };
-
-    fetchProductItems();
-  }, []);
-
+  // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const isFormIncomplete =
+    if (
       !form.product_title ||
       !form.product_description ||
       !form.product_short_description ||
@@ -240,13 +250,9 @@ const AddNewProduct = ({ data }) => {
       !form.category ||
       !form.product_type ||
       !form.product_number_sin ||
-      form.specifications.length === 0 ||
-      form.about_items.length === 0 ||
-      form.tags.length === 0 ||
-      uploadedFiles.length === 0;
-
-    if (isFormIncomplete) {
-      toast.error("All fields are required.", toastStyle);
+      uploadedFiles.length === 0
+    ) {
+      toast.error("Please fill all required product fields and upload images.", toastStyle);
       return;
     }
 
@@ -256,7 +262,6 @@ const AddNewProduct = ({ data }) => {
     };
 
     if (updateStatus) {
-      // Update product
       setLoadingUpdate(true);
       try {
         await updateProduct(
@@ -265,14 +270,17 @@ const AddNewProduct = ({ data }) => {
           uploadedFiles,
           removedImagesPaths
         );
+        dispatch(fetchProducts());
+        dispatch(invalidateDashboardCache());
+        toast.success("Product updated successfully", toastStyle);
         router.push("/panel/products");
       } catch (error) {
         console.error("Error updating product:", error);
+        toast.error("Failed to update product", toastStyle);
       } finally {
         setLoadingUpdate(false);
       }
     } else {
-      // Add new product
       setLoading(true);
       try {
         const result = await addProduct({
@@ -291,320 +299,309 @@ const AddNewProduct = ({ data }) => {
           categoryType: categoryType,
         });
 
-        if (result.success) {
+        if (result?.success) {
+          // Send product email to subscribers
           const emailsToSend = subscriptions
             .map((val) => val?.email)
             .filter(Boolean);
-          try {
-            await axios.post("/api/send-product-email", {
-              emails: emailsToSend,
-              productTitle: form.product_title,
-              productDescription: form.product_description,
-            });
-            console.log("Emails sent successfully!");
-          } catch (err) {
-            console.error("Failed to send email to subscribers:", err);
+
+          if (emailsToSend.length > 0) {
+            try {
+              await axios.post("/api/send-product-email", {
+                emails: emailsToSend,
+                productTitle: form.product_title,
+                productDescription: form.product_description,
+              });
+            } catch (err) {
+              console.error("Failed to send email to subscribers:", err);
+            }
           }
 
-          setForm({
-            product_title: "",
-            product_description: "",
-            product_short_description: "",
-            product_price: "",
-            product_url: "",
-            category: "",
-            product_type: "",
-            product_number_sin: "",
-            specifications: [],
-            about_items: [],
-            tags: [],
-          });
-          setUploadedImages([]);
-          setUploadedFiles([]);
-          setTagInput("");
-          setCategoryType("");
+          dispatch(fetchProducts());
+          dispatch(invalidateDashboardCache());
+          toast.success("Product published successfully!", toastStyle);
           router.push("/panel/products");
         }
       } catch (error) {
         console.error("Error submitting product:", error);
+        toast.error("Failed to publish product", toastStyle);
       } finally {
         setLoading(false);
       }
     }
   };
 
-  // retrieve data for the upadate product
-  const editFunction = () => {
-    const productData = productItems?.find((item) => item?.id === data?.id);
-    console.log(productData, "productData===<>");
-    if (productData) {
-      setUpdateStatus(true);
-      setForm({
-        product_title: productData.product_title || "",
-        product_description: productData.product_description || "",
-        product_short_description: productData.product_short_description || "",
-        product_price: productData.product_price || "",
-        product_url: productData.product_url || "",
-        category: productData.category || "",
-        product_type: productData.product_type || "",
-        product_number_sin: productData.product_number_sin || "",
-        specifications: productData.specifications || [],
-        about_items: productData.about_items || [],
-        tags: productData.tags || [],
-      });
-
-      setCategoryType(productData.categoryType || "");
-
-      setUploadedFiles(productData.imageUrls || []);
-
-      setUploadedImages(productData.imageUrls || []);
-    }
-  };
-
-  useEffect(() => {
-    editFunction();
-  }, [productItems, data?.id]);
-
   return (
     <div>
-      {updateStatus ? (
-        <PanelHead tittle="Products" />
-      ) : (
-        <PanelHead tittle="Products" btnTitle="Add New Product" />
-      )}
+      <PanelHead
+        tittle={updateStatus ? "Edit Product" : "Add New Product"}
+        btnLinkTitle="Back to Products"
+        btnLink="/panel/products"
+      />
 
-      <div className="add_new_product">
-        <Form onSubmit={handleSubmit}>
-          <Row>
-            <Col md={7}>
-              <div className="add_new_product_content">
-                <InputFormControl
-                  required={true}
-                  label="Product Title"
-                  type="text"
-                  name="product_title"
-                  onChange={handleFormChange}
-                  value={form.product_title}
-                />
-                <InputFormControl
-                  required={true}
-                  label="Product Description"
-                  type="text"
-                  name="product_description"
-                  as="textarea"
-                  rows={12}
-                  onChange={handleFormChange}
-                  value={form.product_description}
-                />
-                <InputFormControl
-                  required={true}
-                  label="Product Short Description"
-                  type="text"
-                  name="product_short_description"
-                  as="textarea"
-                  rows={6}
-                  onChange={handleFormChange}
-                  value={form.product_short_description}
-                />
-                <Dropdown
-                  label="Select Category"
-                  searchable={true}
-                  searchPlaceholder="Search categories"
-                  selectedValue={form.category}
-                  setSelectedValue={(selectedCategory) => {
-                    console.log(selectedCategory, "selectedCategory");
-                    setCategoryType(selectedCategory?.category_slug);
-                    setForm((prev) => ({
-                      ...prev,
-                      category: selectedCategory?.category_name,
-                    }));
-                  }}
-                  data={categoryItems}
-                  searchKey="category_name"
-                  displayKey="category_name"
-                />
-                <div className="add_tags_section">
-                  <div className="tags_input">
-                    <InputFormControl
-                      required={false}
-                      label="Product Tags"
-                      type="text"
-                      name="value"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      onKeyDown={handleTagInputKeyDown}
-                    />
-                    {form.tags?.length > 0 && (
-                      <div className="tags_output">
-                        {form.tags.map((tag, index) => (
-                          <div className="tag-item" key={index}>
-                            {tag}
-                            <span
-                              className="remove-tag"
-                              onClick={() => removeTag(index)}
-                            >
-                              <RxCross2 size={15} />
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="add_product_specification">
-                  {form.specifications?.length > 0 && (
-                    <p className="more_item_title">Specifications</p>
-                  )}
-                  {form.specifications.map((spec, index) => (
-                    <div className="specification" key={index}>
-                      <InputFormControl
-                        required={true}
-                        label={`Specification ${index + 1}`}
-                        type="text"
-                        name="label"
-                        value={spec.label}
-                        onChange={(e) =>
-                          handleOnChange("specifications", index, e)
-                        }
-                      />
-
-                      <InputFormControl
-                        required={true}
-                        label={spec.label || `Value ${index + 1}`}
-                        type="text"
-                        name="value"
-                        value={spec.value}
-                        onChange={(e) =>
-                          handleOnChange("specifications", index, e)
-                        }
-                      />
-
-                      <div
-                        className="delete_specification"
-                        onClick={() => removeSpecification(index)}
-                      >
-                        <FaRegTrashCan />
-                      </div>
-                    </div>
-                  ))}
-                  <div onClick={addSpecification} className="add_more_fields">
-                    <FaPlus size={15} /> Add More Specifications
-                  </div>
-                </div>
-                <div className="add_about_items">
-                  {form.about_items?.length > 0 && (
-                    <p className="more_item_title">About Items</p>
-                  )}
-                  {form.about_items.map((about, index) => (
-                    <div className="about_item" key={index}>
-                      <InputFormControl
-                        required={true}
-                        label={`About Item ${index + 1}`}
-                        type="text"
-                        value={about}
-                        onChange={(e) =>
-                          handleOnChange("about_items", index, e)
-                        }
-                      />
-
-                      <div
-                        className="delete_about_item"
-                        onClick={() => removeAboutItem(index)}
-                      >
-                        <FaRegTrashCan />
-                      </div>
-                    </div>
-                  ))}
-                  <div onClick={addAboutItem} className="add_more_fields">
-                    <FaPlus size={15} /> Add More About Items
-                  </div>
+      <Form onSubmit={handleSubmit} style={{ marginTop: "18px" }}>
+        <Row className="g-4">
+          {/* Left Column: Core Info & Highlights */}
+          <Col lg={7}>
+            {/* Card 1: Basic Information */}
+            <div className="admin_form_card mb-4">
+              <div className="admin_form_header">
+                <div>
+                  <h3 className="admin_form_title">
+                    <FiShoppingBag style={{ marginRight: "8px", color: "#f3971b" }} />
+                    Basic Information
+                  </h3>
+                  <p className="admin_form_subtitle">
+                    Title, affiliate link, pricing and overview details
+                  </p>
                 </div>
               </div>
-            </Col>
-            <Col md={5}>
-              <div className="product_side_section">
-                <div className="product_feature_images_section">
-                  <label class="input-label form-label">
-                    Product Feature Images
-                  </label>
 
-                  <div className="product_feature_images">
-                    {/* on the click upload the images */}
-                    <div
-                      className="product_image_upload"
-                      onClick={handleFileUploadClick}
-                    >
-                      <MdOutlineCloudUpload size={55} />
-                      <p className="info">
-                        Drag & Drop images here, or click to upload
-                      </p>
-
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        style={{ display: "none" }}
-                        onChange={handleFileChange}
-                      />
-                    </div>
-                    {uploadedImages && uploadedImages?.length > 0 && (
-                      <div className="feature_image_wrapper">
-                        {uploadedImages?.map((images, index) => (
-                          <div className="feature_image" key={index}>
-                            <div
-                              className="feature_image_preview"
-                              style={{
-                                backgroundImage: `url(${
-                                  images?.url ? images?.url : images
-                                })`,
-                              }}
-                            ></div>
-                            <div
-                              className="remove_feature_image"
-                              onClick={() => removeImage(index)}
-                            >
-                              <FaTrashCan size={35} color="#fff" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="product_additional_info">
+              <div style={{ marginTop: "20px" }}>
+                <div style={{ marginBottom: "16px" }}>
                   <InputFormControl
                     required={true}
-                    label="Product Price"
+                    label="Product Title *"
                     type="text"
-                    name="product_price"
+                    name="product_title"
+                    placeholder="e.g. Sony Alpha 7 IV Full-frame Mirrorless Camera"
                     onChange={handleFormChange}
-                    value={form.product_price}
+                    value={form.product_title}
                   />
+                </div>
+
+                <Row>
+                  <Col md={6} style={{ marginBottom: "16px" }}>
+                    <InputFormControl
+                      required={true}
+                      label="Price (USD) *"
+                      type="number"
+                      name="product_price"
+                      placeholder="e.g. 2498.00"
+                      onChange={handleFormChange}
+                      value={form.product_price}
+                    />
+                  </Col>
+                  <Col md={6} style={{ marginBottom: "16px" }}>
+                    <InputFormControl
+                      required={true}
+                      label="Product ASIN / SKU *"
+                      type="text"
+                      name="product_number_sin"
+                      placeholder="e.g. B09JZT6YSS"
+                      onChange={handleFormChange}
+                      value={form.product_number_sin}
+                    />
+                  </Col>
+                </Row>
+
+                <div style={{ marginBottom: "16px" }}>
                   <InputFormControl
                     required={true}
-                    label="Product URL"
+                    label="Affiliate Product URL *"
                     type="text"
                     name="product_url"
+                    placeholder="https://www.amazon.com/dp/..."
                     onChange={handleFormChange}
                     value={form.product_url}
                   />
+                </div>
+
+                <div style={{ marginBottom: "16px" }}>
                   <InputFormControl
                     required={true}
-                    label="Product Number(sku)"
-                    type="text"
-                    name="product_number_sin"
+                    label="Short Summary Description *"
+                    as="textarea"
+                    rows={3}
+                    name="product_short_description"
+                    placeholder="Brief 2-3 line summary displayed in cards and search listings..."
                     onChange={handleFormChange}
-                    value={form.product_number_sin}
+                    value={form.product_short_description}
                   />
+                </div>
+
+                <div>
+                  <InputFormControl
+                    required={true}
+                    label="Full Product Overview *"
+                    as="textarea"
+                    rows={6}
+                    name="product_description"
+                    placeholder="Complete detailed description of the product features, build, and usage..."
+                    onChange={handleFormChange}
+                    value={form.product_description}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Bullet Highlights & Specifications */}
+            <div className="admin_form_card mb-4">
+              <div className="admin_form_header">
+                <div>
+                  <h3 className="admin_form_title">
+                    <FiList style={{ marginRight: "8px", color: "#f3971b" }} />
+                    Bullet Highlights &amp; Specifications
+                  </h3>
+                  <p className="admin_form_subtitle">
+                    Add bullet points (&ldquo;About this item&rdquo;) and key-value specs
+                  </p>
+                </div>
+              </div>
+
+              {/* About Items */}
+              <div style={{ marginTop: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "#0f172a" }}>
+                    About This Item (Bullet Points)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={addAboutItem}
+                    className="admin_small_add_btn"
+                  >
+                    <FaPlus size={12} /> Add Point
+                  </button>
+                </div>
+
+                {form.about_items.map((about, index) => (
+                  <div key={index} className="admin_dynamic_item_row">
+                    <span className="admin_bullet_dot">•</span>
+                    <input
+                      type="text"
+                      className="admin_filter_input"
+                      placeholder={`Bullet point ${index + 1}...`}
+                      value={about}
+                      onChange={(e) => handleOnChange("about_items", index, e)}
+                    />
+                    <button
+                      type="button"
+                      className="admin_row_delete_btn"
+                      onClick={() => removeAboutItem(index)}
+                      title="Delete bullet"
+                    >
+                      <FaRegTrashCan size={14} />
+                    </button>
+                  </div>
+                ))}
+
+                {form.about_items.length === 0 && (
+                  <div className="admin_empty_hint">
+                    No bullet points added yet. Click &ldquo;+ Add Point&rdquo; to add Amazon-style highlights.
+                  </div>
+                )}
+              </div>
+
+              {/* Specifications */}
+              <div style={{ marginTop: "28px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: "600", color: "#0f172a" }}>
+                    Product Specifications
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => addSpecification()}
+                    className="admin_small_add_btn"
+                  >
+                    <FaPlus size={12} /> Add Custom Spec
+                  </button>
+                </div>
+
+                {/* Predefined Chips */}
+                <div className="admin_chips_wrapper">
+                  <span style={{ fontSize: "12px", color: "#64748b" }}>Quick add:</span>
+                  {predefinedLabels.map((lbl) => (
+                    <button
+                      key={lbl}
+                      type="button"
+                      className="admin_chip_btn"
+                      onClick={() => addSpecification(lbl)}
+                    >
+                      + {lbl}
+                    </button>
+                  ))}
+                </div>
+
+                {form.specifications.map((spec, index) => (
+                  <div key={index} className="admin_spec_row">
+                    <input
+                      type="text"
+                      name="label"
+                      className="admin_filter_input"
+                      style={{ flex: "1" }}
+                      placeholder="Spec Label (e.g. Brand)"
+                      value={spec.label}
+                      onChange={(e) => handleOnChange("specifications", index, e)}
+                    />
+                    <input
+                      type="text"
+                      name="value"
+                      className="admin_filter_input"
+                      style={{ flex: "1.5" }}
+                      placeholder="Spec Value (e.g. Sony)"
+                      value={spec.value}
+                      onChange={(e) => handleOnChange("specifications", index, e)}
+                    />
+                    <button
+                      type="button"
+                      className="admin_row_delete_btn"
+                      onClick={() => removeSpecification(index)}
+                      title="Delete spec"
+                    >
+                      <FaRegTrashCan size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Col>
+
+          {/* Right Column: Classification, Images & Tags */}
+          <Col lg={5}>
+            {/* Card 3: Classification */}
+            <div className="admin_form_card mb-4">
+              <div className="admin_form_header">
+                <div>
+                  <h3 className="admin_form_title">
+                    <FiLayers style={{ marginRight: "8px", color: "#f3971b" }} />
+                    Category &amp; Type
+                  </h3>
+                  <p className="admin_form_subtitle">
+                    Assign catalog categorization
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ marginTop: "20px" }}>
+                <div style={{ marginBottom: "16px" }}>
                   <Dropdown
-                    label="Select Porduct Type"
-                    searchable={false}
-                    searchPlaceholder="Search product type"
-                    selectedValue={form.product_type}
+                    label="Product Category *"
+                    searchable={true}
+                    searchPlaceholder="Search categories..."
+                    selectedValue={form.category}
                     setSelectedValue={(selectedCategory) => {
+                      setCategoryType(selectedCategory?.category_slug || "");
                       setForm((prev) => ({
                         ...prev,
-                        product_type: selectedCategory?.name,
+                        category: selectedCategory?.category_name,
+                      }));
+                    }}
+                    data={categoryItems}
+                    searchKey="category_name"
+                    displayKey="category_name"
+                  />
+                </div>
+
+                <div style={{ marginBottom: "16px" }}>
+                  <Dropdown
+                    label="Product Type *"
+                    searchable={false}
+                    searchPlaceholder="Select product type"
+                    selectedValue={form.product_type}
+                    setSelectedValue={(selectedType) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        product_type: selectedType?.name,
                       }));
                     }}
                     data={productType}
@@ -613,22 +610,135 @@ const AddNewProduct = ({ data }) => {
                   />
                 </div>
 
-                <div className="add_new_product_btn">
-                  <Button
-                    btnTitle={`${
-                      updateStatus
-                        ? "Update Product Changes"
-                        : "Product Publish"
-                    }`}
-                    type="submit"
-                    isLoading={loadingUpdate ? loadingUpdate : loading}
-                  />
+                {/* Tags */}
+                <div>
+                  <label className="input-label form-label" style={{ fontWeight: "600", fontSize: "14px" }}>
+                    Search Tags
+                  </label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <input
+                      type="text"
+                      className="admin_filter_input"
+                      placeholder="Type tag and press Enter..."
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={handleTagInputKeyDown}
+                    />
+                    <button
+                      type="button"
+                      onClick={addTag}
+                      className="admin_small_add_btn"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {form.tags?.length > 0 && (
+                    <div className="admin_tags_cloud" style={{ marginTop: "12px" }}>
+                      {form.tags.map((tag, index) => (
+                        <span key={index} className="admin_tag_badge">
+                          #{tag}
+                          <button
+                            type="button"
+                            onClick={() => removeTag(index)}
+                            className="admin_tag_remove"
+                          >
+                            <RxCross2 size={13} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            </Col>
-          </Row>
-        </Form>
-      </div>
+            </div>
+
+            {/* Card 4: Images */}
+            <div className="admin_form_card mb-4">
+              <div className="admin_form_header">
+                <div>
+                  <h3 className="admin_form_title">
+                    <FiImage style={{ marginRight: "8px", color: "#f3971b" }} />
+                    Product Images *
+                  </h3>
+                  <p className="admin_form_subtitle">
+                    Upload multi-angle high-resolution product photos
+                  </p>
+                </div>
+                <span className="admin_nav_count_badge">
+                  {uploadedImages.length} {uploadedImages.length === 1 ? "Image" : "Images"}
+                </span>
+              </div>
+
+              <div style={{ marginTop: "20px" }}>
+                <div
+                  className="product_image_upload admin_dropzone"
+                  onClick={handleFileUploadClick}
+                >
+                  <MdOutlineCloudUpload size={48} color="#f3971b" />
+                  <p className="info" style={{ fontWeight: "600", color: "#0f172a", marginTop: "10px" }}>
+                    Drop product images here, or browse
+                  </p>
+                  <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+                    Supports multi-image selection (JPG, PNG, WebP)
+                  </span>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+                </div>
+
+                {uploadedImages && uploadedImages.length > 0 && (
+                  <div className="admin_media_preview_grid" style={{ marginTop: "16px" }}>
+                    {uploadedImages.map((image, index) => (
+                      <div className="admin_media_thumb" key={index}>
+                        <div
+                          className="admin_media_thumb_img"
+                          style={{
+                            backgroundImage: `url(${image?.url ? image?.url : image})`,
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="admin_media_thumb_remove"
+                          onClick={() => removeImage(index)}
+                          title="Remove image"
+                        >
+                          <FaTrashCan size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions Card */}
+            <div className="admin_form_card">
+              <div className="admin_form_actions_vertical">
+                <Button
+                  btnTitle={
+                    updateStatus
+                      ? "Update Product Changes"
+                      : "Publish Product"
+                  }
+                  type="submit"
+                  isLoading={loadingUpdate || loading}
+                />
+                <Link href="/panel/products" className="admin_cancel_btn_full">
+                  Cancel &amp; Discard
+                </Link>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      </Form>
     </div>
   );
 };

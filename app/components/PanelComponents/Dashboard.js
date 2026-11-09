@@ -1,35 +1,31 @@
 "use client";
-import { getDashboardOverview } from "@/app/database/firebaseConfig";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Overview from "../Overview/Overview";
 import { Col, Row } from "react-bootstrap";
 import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
+import Link from "next/link";
+import { FaPlus, FaArrowRotateRight } from "react-icons/fa6";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchDashboardOverview } from "@/store/slices/dashboardSlice";
+
+const CACHE_DURATION = 3 * 60 * 1000; // 3 minutes cache
 
 const Dashboard = () => {
-  const [loader, setLoader] = useState(false);
-  const [isFetched, setIsFetched] = useState(false);
-  const [overviewData, setOverviewData] = useState([]);
-
-  console.log(overviewData, "overviewData===<>");
+  const dispatch = useAppDispatch();
+  const { data: overviewData, isLoading: loader, lastFetched } = useAppSelector(
+    (state) => state.dashboard
+  );
 
   useEffect(() => {
-    const fetchDashboardOverview = async () => {
-      try {
-        setLoader(true);
-        const data = await getDashboardOverview();
-        setOverviewData(data);
-      } catch (error) {
-        console.error("Error fetching overview items:", error);
-      } finally {
-        setLoader(false);
-        setIsFetched(true);
-      }
-    };
-
-    if (!isFetched) {
-      fetchDashboardOverview();
+    const isCacheExpired = !lastFetched || Date.now() - lastFetched > CACHE_DURATION;
+    if (isCacheExpired && !overviewData) {
+      dispatch(fetchDashboardOverview());
     }
-  }, [isFetched]);
+  }, [dispatch, lastFetched, overviewData]);
+
+  const handleRefresh = () => {
+    dispatch(fetchDashboardOverview());
+  };
 
   const overviewItems = [
     { title: "Users", data: overviewData?.users },
@@ -49,30 +45,49 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard_content_wrapper">
-      <div className="welcome_banner_itemzfinder">
-        <div
-          className="banner"
-          style={{
-            backgroundImage: `url(/assets/images/welcome-itemzfiner.svg)`,
-          }}
-        ></div>
+      {/* Modern Compact Welcome Header */}
+      <div className="admin_dashboard_hero">
+        <div className="hero_text">
+          <h2>Welcome to ItemzFinder Admin 👋</h2>
+          <p>
+            Monitor activity records, manage live products, categories, and customer interactions in real time.
+          </p>
+        </div>
+        <div className="hero_actions">
+          <Link href="/panel/products/add-new-product" className="hero_btn primary">
+            <FaPlus size={14} />
+            <span>Add Product</span>
+          </Link>
+          <Link href="/panel/categories/add-new-category" className="hero_btn secondary">
+            <FaPlus size={14} />
+            <span>Add Category</span>
+          </Link>
+          <button
+            className={`hero_btn icon_only ${loader ? "spinning" : ""}`}
+            onClick={handleRefresh}
+            title="Refresh Data"
+          >
+            <FaArrowRotateRight size={14} />
+          </button>
+        </div>
       </div>
-      {loader ? (
-        <div className="activity_record_overview">
-          <SkeletonLoader width={400} height={50} />
+
+      <div className="dashboard_section_header">
+        <div>
+          <h3>Activity Record Overview</h3>
+          <p className="subtitle">Real-time statistics across all collections</p>
         </div>
-      ) : (
-        <div className="activity_record_overview">
-          <h1>Activity Record Overview</h1>
-        </div>
-      )}
+      </div>
+
       <div className="overview_box_grid_wrapper">
         <Row>
-          {loader ? (
+          {loader && !overviewData ? (
             <>
               {[1, 2, 3, 4, 5, 6, 7]?.map((val, i) => (
-                <Col key={i} lg={4} md={4}>
-                  <SkeletonLoader height={200} />
+                <Col key={i} lg={4} md={6} sm={12} className="mb-4">
+                  <div className="overview_skeleton_card">
+                    <SkeletonLoader height={140} borderRadius={14} />
+                  </div>
                 </Col>
               ))}
             </>
@@ -81,7 +96,7 @@ const Dashboard = () => {
               {overviewItems.map(
                 ({ title, data }) =>
                   data && (
-                    <Col key={title} lg={4} md={4}>
+                    <Col key={title} lg={4} md={6} sm={12} className="mb-4">
                       <Overview title={title} data={data} />
                     </Col>
                   )

@@ -1,15 +1,21 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { Col, Container, Form, Row } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
+import { FiShield, FiUserPlus, FiCheck, FiX } from "react-icons/fi";
 import InputFormControl from "../InputFormControl/InputFormControl";
 import Button from "../Button/Button";
 import { toast } from "react-toastify";
 import { toastStyle } from "@/app/_method/utils";
 import { register } from "@/app/database/firebaseConfig";
+import { useAppDispatch } from "@/src/store/hooks";
+import { invalidateDashboardCache } from "@/src/store/slices/dashboardSlice";
+import PanelHead from "../PanelHead/PanelHead";
 
 const AddUser = ({ setAuthType }) => {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState({
     fullname: "",
     email: "",
@@ -18,7 +24,6 @@ const AddUser = ({ setAuthType }) => {
   });
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmpasswordVisible, setConfirmPasswordVisible] = useState(false);
-
   const [loading, setLoading] = useState(false);
 
   const handleFormChange = (e) => {
@@ -29,24 +34,27 @@ const AddUser = ({ setAuthType }) => {
     }));
   };
 
-  const validatePassword = (password) => {
-    const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/;
-    return regex.test(password);
-  };
+  // Password requirements
+  const hasLength = form.password.length >= 8;
+  const hasUpper = /[A-Z]/.test(form.password);
+  const hasLower = /[a-z]/.test(form.password);
+  const hasNumber = /\d/.test(form.password);
+  const hasSpecial = /[!@#$%^&*]/.test(form.password);
+  const isPasswordValid = hasLength && hasUpper && hasLower && hasNumber && hasSpecial;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validatePassword(form.password)) {
+    if (!isPasswordValid) {
       toast.error(
-        "Password must be 8+ characters with uppercase, lowercase, number, and special character.",
+        "Please meet all password security requirements before proceeding.",
         toastStyle
       );
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      toast.error("Passwords do not match", toastStyle);
+      toast.error("Passwords do not match.", toastStyle);
       return;
     }
 
@@ -57,76 +65,172 @@ const AddUser = ({ setAuthType }) => {
         password: form.password,
         fullName: form.fullname,
       });
+
+      dispatch(invalidateDashboardCache());
+      toast.success("Administrator account registered successfully!", toastStyle);
+
       setForm({
         fullname: "",
         email: "",
         password: "",
         confirmPassword: "",
       });
-      setAuthType("login");
+
+      if (setAuthType) {
+        setAuthType("login");
+      } else {
+        router.push("/panel/dashboard");
+      }
     } catch (error) {
-      toast.error("Registration failed. Please try again.", toastStyle);
+      console.error("Registration error:", error);
+      toast.error(
+        error?.message || "Registration failed. Please try again.",
+        toastStyle
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setConfirmPasswordVisible(!confirmpasswordVisible);
-  };
+  const isInsidePanel = !setAuthType;
 
   return (
-    <div className="cms_panle_auth_wrapper">
-      <Form onSubmit={handleSubmit}>
-        <InputFormControl
-          required={true}
-          label="Full Name*"
-          type="text"
-          name="fullname"
-          onChange={handleFormChange}
-          value={form.fullname}
-        />
+    <div>
+      {isInsidePanel && <PanelHead tittle="Security &amp; User Access" />}
 
-        <InputFormControl
-          required={true}
-          label="E-Mail*"
-          type="email"
-          name="email"
-          onChange={handleFormChange}
-          value={form.email}
-        />
-        <div className="row">
-          <div className="col-md-6">
+      <div
+        className="admin_form_card"
+        style={{
+          marginTop: isInsidePanel ? "18px" : "0",
+          maxWidth: isInsidePanel ? "680px" : "100%",
+        }}
+      >
+        <div className="admin_form_header">
+          <div>
+            <h3 className="admin_form_title">
+              <FiShield style={{ marginRight: "8px", color: "#f3971b" }} />
+              Register Administrator Account
+            </h3>
+            <p className="admin_form_subtitle">
+              Grant dashboard management and catalog editing permissions
+            </p>
+          </div>
+          <span className="admin_nav_count_badge">Role: Administrator</span>
+        </div>
+
+        <Form onSubmit={handleSubmit} style={{ marginTop: "24px" }}>
+          <div style={{ marginBottom: "16px" }}>
             <InputFormControl
               required={true}
-              label="Password*"
+              label="Full Name *"
+              type="text"
+              name="fullname"
+              placeholder="e.g. Sarah Jenkins"
+              onChange={handleFormChange}
+              value={form.fullname}
+            />
+          </div>
+
+          <div style={{ marginBottom: "16px" }}>
+            <InputFormControl
+              required={true}
+              label="Email Address *"
+              type="email"
+              name="email"
+              placeholder="admin@example.com"
+              onChange={handleFormChange}
+              value={form.email}
+            />
+          </div>
+
+          {/* Password */}
+          <div style={{ marginBottom: "16px", position: "relative" }}>
+            <InputFormControl
+              required={true}
+              label="Password *"
               type={passwordVisible ? "text" : "password"}
               name="password"
+              placeholder="••••••••"
               onChange={handleFormChange}
               value={form.password}
-              icon={passwordVisible ? <FaEye /> : <FaEyeSlash />}
-              onClickIcon={togglePasswordVisibility}
             />
+            <div
+              className="password_trigger"
+              onClick={() => setPasswordVisible(!passwordVisible)}
+              style={{
+                position: "absolute",
+                right: "14px",
+                top: "42px",
+                cursor: "pointer",
+                color: "#64748b",
+              }}
+            >
+              {passwordVisible ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </div>
           </div>
-          <div className="col-md-6">
+
+          {/* Confirm Password */}
+          <div style={{ marginBottom: "20px", position: "relative" }}>
             <InputFormControl
               required={true}
-              label="Confirm Password*"
+              label="Confirm Password *"
               type={confirmpasswordVisible ? "text" : "password"}
               name="confirmPassword"
+              placeholder="••••••••"
               onChange={handleFormChange}
               value={form.confirmPassword}
-              icon={confirmpasswordVisible ? <FaEye /> : <FaEyeSlash />}
-              onClickIcon={toggleConfirmPasswordVisibility}
+            />
+            <div
+              className="password_trigger"
+              onClick={() => setConfirmPasswordVisible(!confirmpasswordVisible)}
+              style={{
+                position: "absolute",
+                right: "14px",
+                top: "42px",
+                cursor: "pointer",
+                color: "#64748b",
+              }}
+            >
+              {confirmpasswordVisible ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </div>
+          </div>
+
+          {/* Password Checklist */}
+          {form.password && (
+            <div className="admin_password_checklist">
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#475569", display: "block", marginBottom: "6px" }}>
+                Password Security Checklist:
+              </span>
+              <ul className="admin_checklist_ul">
+                <li className={hasLength ? "valid" : "invalid"}>
+                  {hasLength ? <FiCheck /> : <FiX />} 8+ characters
+                </li>
+                <li className={hasUpper ? "valid" : "invalid"}>
+                  {hasUpper ? <FiCheck /> : <FiX />} Uppercase letter
+                </li>
+                <li className={hasLower ? "valid" : "invalid"}>
+                  {hasLower ? <FiCheck /> : <FiX />} Lowercase letter
+                </li>
+                <li className={hasNumber ? "valid" : "invalid"}>
+                  {hasNumber ? <FiCheck /> : <FiX />} Number
+                </li>
+                <li className={hasSpecial ? "valid" : "invalid"}>
+                  {hasSpecial ? <FiCheck /> : <FiX />} Special character (!@#$%^&amp;*)
+                </li>
+              </ul>
+            </div>
+          )}
+
+          <div style={{ marginTop: "24px" }}>
+            <Button
+              btnTitle="Create Administrator Account"
+              type="submit"
+              isLoading={loading}
+              disabled={loading || !isPasswordValid}
             />
           </div>
-        </div>
-        <Button btnTitle={`Signup User`} type="submit" isLoading={loading} />
-      </Form>
+        </Form>
+      </div>
     </div>
   );
 };

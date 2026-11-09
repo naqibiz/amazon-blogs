@@ -16,6 +16,7 @@ import productReducer from "./slices/productSlice";
 import categoryReducer from "./slices/categorySlice";
 import navReducer from "./slices/navSlice";
 import uiReducer from "./slices/uiSlice";
+import dashboardReducer from "./slices/dashboardSlice";
 
 const createNoopStorage = () => {
   return {
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
   categories: categoryReducer,
   navigation: navReducer,
   ui: uiReducer,
+  dashboard: dashboardReducer,
 });
 
 const persistConfig = {
