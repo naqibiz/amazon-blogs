@@ -1,49 +1,37 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Col, Container, Row } from "react-bootstrap";
-import StarRatings from "react-star-ratings";
-import { BsFillInfoCircleFill } from "react-icons/bs";
-import Link from "next/link";
-import { BsCurrencyDollar } from "react-icons/bs";
 import { useRouter } from "next/navigation";
-import { getProducts } from "@/app/database/firebaseConfig";
 import ProductCategoryBox from "../ProductCategoryBox/ProductCategoryBox";
 import SkeletonLoader from "../SkeletonLoader/SkeletonLoader";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchProducts } from "@/store/slices/productSlice";
 
 const LatestProducts = () => {
-  const [productItems, setProductItems] = useState([]);
-  const [isFetched, setIsFetched] = useState(false);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const {
+    items,
+    isLoading: loading,
+    lastFetched,
+  } = useAppSelector((state) => state.products);
 
   useEffect(() => {
-    const fetchProductItems = async () => {
-      try {
-        setLoading(true);
-        const items = await getProducts();
-        const mostPopular = items?.filter(
-          (val) => val?.product_type === "Most Popular"
-        );
-        setProductItems(mostPopular);
-      } catch (error) {
-        console.error("Error fetching product items:", error);
-      } finally {
-        setLoading(false);
-        setIsFetched(true);
-      }
-    };
-
-    if (!isFetched) {
-      fetchProductItems();
+    if (!lastFetched && items.length === 0) {
+      dispatch(fetchProducts());
     }
-  }, [isFetched]);
+  }, [dispatch, lastFetched, items.length]);
+
+  const productItems = useMemo(() => {
+    return items?.filter((val) => val?.product_type === "Most Popular") || [];
+  }, [items]);
 
   return (
     <Container>
       <h1>Our Newest Obsessions Have Arrived</h1>
       <div className="latest_products_inner">
         <Row>
-          {loading
+          {loading && productItems.length === 0
             ? [1, 2, 3, 4].map((val) => (
                 <Col lg={3} key={val}>
                   <SkeletonLoader height={170} />

@@ -1,5 +1,5 @@
 import React from "react";
-import SingleProductDetail from "../components/SingleProduct/SingleProduct";
+import SingleProductDetail from "@/app/components/SingleProduct/SingleProduct";
 
 const singleProductIndex = ({ searchParams }) => {
   return (

@@ -1,6 +1,6 @@
 import React from "react";
-import ProductsCategory from "../components/ProductsCategory/ProductsCategory";
-import HeadContent from "../components/HeadContent/HeadContent";
+import ProductsCategory from "@/app/components/ProductsCategory/ProductsCategory";
+import HeadContent from "@/app/components/HeadContent/HeadContent";
 
 const ProductsIndex = ({ searchParams }) => {
   return (

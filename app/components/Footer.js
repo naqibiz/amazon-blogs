@@ -13,8 +13,6 @@ import { usePathname, useRouter } from "next/navigation";
 
 const Footer = () => {
   const router = useRouter();
-  const pathname = usePathname();
-  const panelRoute = pathname?.slice(0, 6) == "/panel";
   const footerItems = [
     {
       title: "Quick Links",
@@ -61,11 +59,7 @@ const Footer = () => {
   ];
 
   return (
-    <>
-      {pathname == "/admin-panel-auth" || panelRoute ? (
-        <></>
-      ) : (
-        <footer className="footer_section">
+    <footer className="footer_section">
           <Container>
             <Row>
               <Col lg={3} md={6}>
@@ -165,8 +159,6 @@ const Footer = () => {
             </div>
           </Container>
         </footer>
-      )}
-    </>
   );
 };
 

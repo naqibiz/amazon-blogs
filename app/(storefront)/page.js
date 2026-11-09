@@ -1,6 +1,6 @@
-import CategoryListings from "./components/CategoryListings/CategoryListings";
-import LatestProducts from "./components/LatestProducts/LatestProducts";
-import TopProductBanners from "./components/TopProductBanners/TopProductBanners";
+import CategoryListings from "@/app/components/CategoryListings/CategoryListings";
+import LatestProducts from "@/app/components/LatestProducts/LatestProducts";
+import TopProductBanners from "@/app/components/TopProductBanners/TopProductBanners";
 
 export default function Home() {
   return (

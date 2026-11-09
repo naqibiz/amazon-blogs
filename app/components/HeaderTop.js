@@ -14,11 +14,8 @@ import useAuthRedirect from "./useAuthRedirect/useAuthRedirect";
 import SearchProducts from "./SearchProducts";
 
 const HeaderTop = () => {
-  const pathname = usePathname();
   const router = useRouter();
   const { currentUser } = useAuthRedirect();
-  const panelRoute = pathname?.slice(0, 6) == "/panel";
-
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleLogout = async () => {
@@ -36,29 +33,25 @@ const HeaderTop = () => {
     <div className="header_top_content">
       <div className="header_logo">
         <Link href={"/"}>
-          <img src="/assets/images/light-logo.svg" alt="" />
+          <img src="/assets/images/light-logo.svg" alt="itemzfinder" />
         </Link>
       </div>
-      {pathname == "/admin-panel-auth" || panelRoute ? null : (
-        <div className="search-blog">
+      <div className="search-blog">
           <Form
             onSubmit={(e) => {
               e.preventDefault();
             }}
           >
-            <LuSearch color="#f3971b" size={25} className="search_icon" />
+            <LuSearch color="#f3971b" size={22} className="search_icon" />
             <input
               className="form-control"
-              placeholder="Find what you're looking for..."
+              placeholder="Search for products..."
               required
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               type="text"
               aria-label="Search Blogs"
             />
-            {/* <button className="search_blog_btn">
-              <LuSearch color="#fff" size={25} />
-            </button> */}
           </Form>
           {searchTerm.length > 2 && (
             <SearchProducts
@@ -67,17 +60,17 @@ const HeaderTop = () => {
             />
           )}
         </div>
-      )}
       <div className="header_right_section">
         {currentUser ? (
           <button className="logout_panel" onClick={() => handleLogout()}>
-            <RiLogoutCircleLine size={20} />
+            <RiLogoutCircleLine size={22} />
+            <span>Logout</span>
           </button>
         ) : (
           <div className="contact_section">
             <a href="tel:+92 331 2299471">
-              <FaPhoneVolume size={25} color="#ffffff" />
-              +92 331 2299471
+              <FaPhoneVolume size={22} color="#ffffff" />
+              <span>+92 331 2299471</span>
             </a>
           </div>
         )}

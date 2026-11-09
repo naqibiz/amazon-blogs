@@ -1,11 +1,9 @@
-import { Inter, Rubik } from "next/font/google";
+import { Rubik } from "next/font/google";
 import "./globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Header from "./components/Header";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Footer from "./components/Footer";
-import ProgressBarRouting from "./components/ProgressBarRouting/ProgressBarRouting";
+import ReduxProvider from "@/store/provider";
 
 const rubik = Rubik({ subsets: ["latin"] });
 
@@ -36,13 +34,10 @@ export default function RootLayout({ children }) {
         <meta property="og:type" content="website" />
       </head>
       <body className={rubik.className}>
-        <div className="itemzfinder_content_body">
-          <ProgressBarRouting />
-          <Header />
-          <div className="content_middle_body">{children}</div>
+        <ReduxProvider>
+          {children}
           <ToastContainer />
-          <Footer />
-        </div>
+        </ReduxProvider>
       </body>
     </html>
   );

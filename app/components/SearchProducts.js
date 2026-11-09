@@ -1,56 +1,49 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Loader } from "./Loader";
-import { getProducts } from "../database/firebaseConfig";
 import Link from "next/link";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchProducts } from "@/store/slices/productSlice";
 
 const SearchProducts = ({ searchTerm, setSearchTerm }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
+  const {
+    items: allProducts,
+    isLoading: loading,
+    lastFetched,
+  } = useAppSelector((state) => state.products);
 
   useEffect(() => {
-    const fetchFilteredProducts = async () => {
-      if (!searchTerm || searchTerm.length <= 2) {
-        setProducts([]);
-        return;
-      }
+    if (!lastFetched && allProducts.length === 0) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, lastFetched, allProducts.length]);
 
-      setLoading(true);
+  const products = useMemo(() => {
+    if (!searchTerm || searchTerm.trim().length <= 2) {
+      return [];
+    }
 
-      try {
-        const allProducts = await getProducts();
+    const term = searchTerm.toLowerCase();
+    return allProducts.filter((product) => {
+      const title = product?.product_title?.toLowerCase() || "";
+      const number =
+        product?.product_number_sin?.toString().toLowerCase() || "";
+      const category = product?.category?.toLowerCase() || "";
 
-        const filtered = allProducts.filter((product) => {
-          const title = product?.product_title?.toLowerCase() || "";
-          const number =
-            product?.product_number_sin?.toString().toLowerCase() || "";
-          const category = product?.category?.toLowerCase() || "";
-          const term = searchTerm.toLowerCase();
-
-          return (
-            title.includes(term) ||
-            number.includes(term) ||
-            category.includes(term)
-          );
-        });
-
-        setProducts(filtered);
-      } catch (error) {
-        console.error("Search error:", error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFilteredProducts();
-  }, [searchTerm]);
+      return (
+        title.includes(term) ||
+        number.includes(term) ||
+        category.includes(term)
+      );
+    });
+  }, [searchTerm, allProducts]);
 
   return (
     <div className="search_products_wrapper">
       <div className="search_products_listing">
         <div className="search_products_grid">
-          {loading ? (
+          {loading && allProducts.length === 0 ? (
             <div className="loading_section">
               <Loader />
               <p>Searching products, please wait...</p>
@@ -60,40 +53,35 @@ const SearchProducts = ({ searchTerm, setSearchTerm }) => {
               <p>No products matched your search.</p>
             </div>
           ) : (
-            products?.map((data) => (
-              <Link
-                href={{
-                  pathname: "/single-product",
-                  query: {
-                    id: data.id,
-                    type: data?.categoryType,
-                  },
-                }}
-                key={data.id}
-                className="link_row_product"
-                onClick={() => setSearchTerm("")}
-              >
-                <div className="row_product">
-                  <div className="row_product_info">
-                    <div className="product_image_main">
-                      <div
-                        className="product_image"
-                        style={{
-                          backgroundImage: `url(${
-                            data.imageUrls?.[0]?.url ||
-                            "/assets/images/placeholder.png"
-                          })`,
-                        }}
-                      ></div>
+            <ul>
+              {products.map((val, i) => (
+                <li key={i} onClick={() => setSearchTerm("")}>
+                  <Link
+                    href={{
+                      pathname: "/single-product",
+                      query: {
+                        id: val?.id,
+                        type: val?.categoryType,
+                      },
+                    }}
+                  >
+                    <div className="search_product_grid_main">
+                      <div className="search_product_image">
+                        <img src={val?.imageUrls?.[0]?.url} alt="" />
+                      </div>
+                      <div className="search_product_content">
+                        <p className="search_product_title">
+                          {val?.product_title}
+                        </p>
+                        <p className="search_product_price">
+                          ${val?.product_price}
+                        </p>
+                      </div>
                     </div>
-                    <div className="product_name">
-                      <p>{data?.product_title}</p>
-                    </div>
-                  </div>
-                  <div className="product_category_name">{data?.category}</div>
-                </div>
-              </Link>
-            ))
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>
